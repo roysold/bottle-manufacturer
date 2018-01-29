@@ -6,7 +6,7 @@
   "scripts": {
     "start": "webpack-dev-server",
     "run-bundle": "node build/bundle.js",
-    "run-app": "cls && node app/app.js",
+    "run-app": "node app/app.js",
     "build": "webpack"
   },
   "babel": {
@@ -18,14 +18,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2"
+    "express": "^4.16.2",
+    "express-validator": "^4.3.0",
+    "express-validators": "^1.0.4"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-polyfill": "^6.26.0",
     "babel-preset-latest": "^6.24.1",
+    "body-parser": "^1.18.2",
     "http-status-codes": "^1.3.0",
+    "multer": "^1.3.0",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1"
   }
