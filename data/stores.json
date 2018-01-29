@@ -1,0 +1,20 @@
+[
+    {
+        "id": "1",
+        "name": "Hashawarma Shel Shimon",
+        "address": "3 Shuli st, Ramat Hasharon, Israel",
+        "contactID": "1"
+    },
+    {
+        "id": "2",
+        "name": "Coke Shop",
+        "address": "15 Ben Gurion st, Ramat Gan, Israel",
+        "contactID": "2"
+    },
+    {
+        "id": "3",
+        "name": "Fanta Shop",
+        "address": "190 Ahuza st, Raanana, Israel",
+        "contactID": "3"
+    }
+]

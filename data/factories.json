@@ -1,0 +1,17 @@
+[
+    {
+        "id": "1",
+        "address": "4, Highway 4, Israel",
+        "contantID": "1"
+    },
+    {
+        "id": "2",
+        "address": "6 Muslim st, Ahmed, Syria",
+        "contantID": "2"
+    },
+    {
+        "id": "3",
+        "address": "1 Ahuza st , Raanana, Israel",
+        "contantID": "3"
+    }
+]

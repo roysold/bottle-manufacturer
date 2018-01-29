@@ -1,0 +1,17 @@
+[
+    {
+        "id": "1",
+        "name": "Coka Cola",
+        "size": "2L"
+    },
+    {
+        "id": "2",
+        "name": "Coka Cola",
+        "size": "0.35L"
+    },
+    {
+        "id": "3",
+        "name": "Fanta",
+        "size": "2L"
+    }
+]

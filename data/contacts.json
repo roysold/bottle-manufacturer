@@ -1,0 +1,20 @@
+[
+    {
+        "id": "1",
+        "name": "Asher Biton",
+        "phone": "052 666 3647",
+        "email": "rasar@walla.co.il"
+    },
+    {
+        "id": "2",
+        "name": "Moshe Saggy",
+        "phone": "054 984 3154",
+        "email": "dude@hotmail.com"
+    },
+    {
+        "id": "3",
+        "name": "Freddy Mercury",
+        "phone": "052 999 9999",
+        "email": "man@email.com"
+    }
+]
