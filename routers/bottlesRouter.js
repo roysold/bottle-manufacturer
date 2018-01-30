@@ -40,5 +40,6 @@ router.route("/")
         res.status(httpStatusCodes.ACCEPTED)
             .send("Bottle modified.");
     })
-    .post()
+    .post();
+
 module.exports = router;
