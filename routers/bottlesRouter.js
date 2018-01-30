@@ -5,6 +5,8 @@ let { body, validationResult } = require('express-validator/check');
 let router = express.Router();
 let bottles = require("../data/bottles.json");
 
+bottles = bottles.map(bottle => addLinksToBottle(bottle));
+
 router.use(bodyParser.json());
 
 router.use(function (err, req, res, next) {
@@ -27,16 +29,16 @@ router.param("id", (req, res, next) => {
         : next();
 });
 
-router.route("/:id")
-    .get((req, res) => {
-        res.json(bottles[res.locals.indexOfBottleByID]);
-    })
-    .delete((req, res) => {
-        bottles.splice(res.locals.indexOfBottleByID, 1);
+router.get("/:id", (req, res) => {
+    res.json(bottles[res.locals.indexOfBottleByID]);
+});
 
-        res.status(httpStatusCodes.ACCEPTED)
-            .send("Bottle deleted.");
-    });
+router.delete("/:id", (req, res) => {
+    bottles.splice(res.locals.indexOfBottleByID, 1);
+
+    res.status(httpStatusCodes.ACCEPTED)
+        .send("Bottle deleted.");
+});
 
 const bottleValidations = [
     body(["id", "orderID", "factoryID"])
@@ -108,6 +110,18 @@ function sendBottleIDNotFoundError(id, res) {
 function sendUnprocessableEntityError(errors, res) {
     res.status(httpStatusCodes.UNPROCESSABLE_ENTITY)
         .json({ errors: errors.mapped() });
+}
+
+function addLinksToBottle(obj) {
+    let objectToReturn = Object.assign({}, obj);
+    objectToReturn.links = [];
+
+    objectToReturn.links.push({
+        rel: "self",
+        href: "/api/v1/bottles/" + objectToReturn.id
+    });
+
+    return objectToReturn;
 }
 
 module.exports = router;
