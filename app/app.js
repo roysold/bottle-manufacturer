@@ -3,6 +3,6 @@ var bottlesRouter = require("../routers/bottlesRouter.js");
 
 let app = express();
 
-app.use("/bottles", bottlesRouter);
+app.use("/api/v1/bottles", bottlesRouter);
 
 app.listen(3000);
