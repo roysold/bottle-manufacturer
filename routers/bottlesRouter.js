@@ -1,7 +1,7 @@
 let express = require('express');
 let httpStatusCodes = require("http-status-codes");
 let bodyParser = require("body-parser");
-let { body, validationResult } = require('express-validator/check');
+let { body, query, validationResult } = require('express-validator/check');
 let router = express.Router();
 let bottles = require("../data/bottles.json");
 
@@ -21,36 +21,73 @@ router.use(function (err, req, res, next) {
     }
 });
 
-//sort=-manufactorer,+model
-// fields=manufacturer,model,id,color
-// offset=10&limit=5
-// { sort: '-manufactorer, model',
-//   fields: 'manufacturer,model,id,color',
-//   offset: '10',
-//   limit: '5' }
+let bottleObjectSample = Object.assign({}, bottles[0]);
+delete bottleObjectSample.links;
 
-router.get("/", (req, res) => {
-    console.log(req.query);
-    let bottlesToSend = [];
-    let { offset, limit, fields, sort } = req.query;
+function isInSortFormat(value) {
+    let field = value.replace(/^(\+|-)/, "");
 
-    sort = (sort === undefined) ? [] : sort.split(",");
-    offset = (offset === undefined) ? 0 : parseInt(offset);
-    limit = (limit === undefined) ? bottles.length - offset : parseInt(limit);
-    fields = (fields === undefined) ? undefined : fields.split(",");
+    return Object.keys(bottleObjectSample).includes(field);
+}
 
-    let sortedBottles = sortList(bottles, sort);
+const queryValidations = [
+    query("fields")
+        .optional()
+        .isIn(Object.keys(bottleObjectSample))
+        .withMessage("Needs to be one or more real fields."),
+    query(["offset", "limit"])
+        .optional()
+        .isNumeric()
+        .withMessage("Needs to be an integer."),
+    query("sort")
+        .optional()
+        .custom(isInSortFormat)
+        .withMessage("Needs to be either <field_name>, +<field_name>, -<field_name>.")
+];
 
-    let rangedBottles = sortedBottles.slice(offset, offset + limit);
+// example route: /api/v1/bottles?sort=-id,creationDate,\+factoryID&fields=id,orderID,factoryID&offset=-2&limit=1
+// Route sorts by descending id, ascending creationDate
+// and factoryID, displays id, orderID
+// and factoryID fields and gets only the second last object.
+router.get("/", queryValidations, (req, res) => {
+    const errors = validationResult(req);
 
-    let manipulatedBottles =
-        fields ?
-            rangedBottles.map(
-                getObjectWithSelectedFieldsFunction(fields)
-            )
-            : rangedBottles;
+    if (errors.isEmpty()) {
+        let { offset, limit, fields, sort } = req.query;
 
-    res.json(manipulatedBottles);
+        sort = (sort === undefined) ? [] : sort.split(",");
+        offset = (offset === undefined) ? 0 : parseInt(offset);
+        limit = (limit === undefined) ? bottles.length - offset : parseInt(limit);
+        fields = (fields === undefined) ? undefined : fields.split(",");
+
+        let sortedBottles = bottles.slice();
+
+        for (let index = sort.length - 1; index >= 0; index--) {
+            let field = sort[index].replace(/^(\+|-)/, "");
+
+            sortedBottles.sort(
+                getCompareItemByFieldFunction(
+                    field,
+                    field === "creationDate",
+                    !sort[index].startsWith("-")
+                )
+            );
+        }
+
+        let rangedBottles = sortedBottles.slice(offset, offset + limit);
+
+        let manipulatedBottles =
+            fields ?
+                rangedBottles.map(
+                    getObjectWithSelectedFieldsFunction(fields)
+                )
+                : rangedBottles;
+
+        res.json(manipulatedBottles);
+    } else {
+        res.status(httpStatusCodes.BAD_REQUEST)
+            .json({ errors: errors.mapped() });
+    }
 });
 
 function getObjectWithSelectedFieldsFunction(fields) {
@@ -65,23 +102,21 @@ function getObjectWithSelectedFieldsFunction(fields) {
     }
 }
 
-function sortList(list, sortFields) {
-    let sortedList = list.slice();
-
-    for (let index = sortFields.length - 1; index >= 0; index--) {
-        sortedList.sort(getCompareItemByFieldFunction(sortFields[index]));
-    }
-
-    return sortedList;
-}
-
 // TODO think about taking - and + out and into params.
-function getCompareItemByFieldFunction(field) {
-    if (field[0] === "-") {
+function getCompareItemByFieldFunction(field, isDate, ascending) {
+    if (!ascending) {
         return (item1, item2) => {
-            if (item1[field.slice(1)] < item2[field.slice(1)]) {
+            let value1 = item1[field];
+            let value2 = item2[field];
+
+            if (isDate) {
+                value1 = new Date(value1);
+                value2 = new Date(value2);
+            }
+
+            if (value1 < value2) {
                 return 1;
-            } else if (item1[field.slice(1)] > item2[field.slice(1)]) {
+            } else if (value1 > value2) {
                 return -1;
             } else {
                 return 0;
@@ -89,9 +124,17 @@ function getCompareItemByFieldFunction(field) {
         }
     } else {
         return (item1, item2) => {
-            if (item1[field.slice(1)] > item2[field.slice(1)]) {
+            let value1 = item1[field];
+            let value2 = item2[field];
+
+            if (isDate) {
+                value1 = new Date(value1);
+                value2 = new Date(value2);
+            }
+
+            if (value1 > value2) {
                 return 1;
-            } else if (item1[field.slice(1)] < item2[field.slice(1)]) {
+            } else if (value1 < value2) {
                 return -1;
             } else {
                 return 0;
@@ -129,6 +172,7 @@ const bottleValidations = [
         .isISO8601()
         .withMessage('Field is required and must be in ISO8601 format.')
 ];
+
 
 // TODO change properties or delete and add new object each time?
 router.put("/", bottleValidations,
