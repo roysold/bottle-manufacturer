@@ -34,37 +34,70 @@ router.get("/", (req, res) => {
     let bottlesToSend = [];
     let { offset, limit, fields, sort } = req.query;
 
-    offset = (offset === undefined) ? 0 : parseInt(offset);
-    limit = (limit > bottles.length - offset) ? bottles.length - offset : parseInt(limit);
-    fields = (fields === undefined) ? Object.keys(bottles[0]) : fields.split(",");
     sort = (sort === undefined) ? [] : sort.split(",");
+    offset = (offset === undefined) ? 0 : parseInt(offset);
+    limit = (limit === undefined) ? bottles.length - offset : parseInt(limit);
+    fields = (fields === undefined) ? undefined : fields.split(",");
 
-    let bottlesToSort = sortList(bottles, sort);
+    let sortedBottles = sortList(bottles, sort);
 
-    //TODO
-    for (let index = offset; index < offset + limit; index++) {
-        bottlesToSend.push({});
-    }
+    let rangedBottles = sortedBottles.slice(offset, offset + limit);
 
-    bottlesToSend = bottles.map(bottle => {
-        let bottleToReturn = {};
+    let manipulatedBottles =
+        fields ?
+            rangedBottles.map(
+                getObjectWithSelectedFieldsFunction(fields)
+            )
+            : rangedBottles;
 
-    })
-
-    res.json(bottles);
+    res.json(manipulatedBottles);
 });
 
-//TODO
+function getObjectWithSelectedFieldsFunction(fields) {
+    return obj => {
+        let objWithSelectedfields = {};
+
+        fields.forEach(field => {
+            objWithSelectedfields[field] = obj[field];
+        });
+
+        return objWithSelectedfields;
+    }
+}
+
 function sortList(list, sortFields) {
     let sortedList = list.slice();
 
-    sortFields.forEach(field => {
-        if (field.startsWith("+")) {
-            sortedList.sort((item1, item2) => {
+    for (let index = sortFields.length - 1; index >= 0; index--) {
+        sortedList.sort(getCompareItemByFieldFunction(sortFields[index]));
+    }
 
-            })
+    return sortedList;
+}
+
+// TODO think about taking - and + out and into params.
+function getCompareItemByFieldFunction(field) {
+    if (field[0] === "-") {
+        return (item1, item2) => {
+            if (item1[field.slice(1)] < item2[field.slice(1)]) {
+                return 1;
+            } else if (item1[field.slice(1)] > item2[field.slice(1)]) {
+                return -1;
+            } else {
+                return 0;
+            }
         }
-    })
+    } else {
+        return (item1, item2) => {
+            if (item1[field.slice(1)] > item2[field.slice(1)]) {
+                return 1;
+            } else if (item1[field.slice(1)] < item2[field.slice(1)]) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+    }
 }
 
 router.param("id", (req, res, next) => {
