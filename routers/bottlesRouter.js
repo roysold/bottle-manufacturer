@@ -1,9 +1,10 @@
 let express = require('express');
-let httpStatusCodes = require("http-status-codes");
+const httpStatusCodes = require("http-status-codes");
 let bodyParser = require("body-parser");
 let { body, query, validationResult } = require('express-validator/check');
-let router = express.Router();
 let bottles = require("../data/bottles.json");
+
+let router = express.Router();
 
 bottles = bottles.map(bottle => addLinksToBottle(
     bottle,
@@ -102,17 +103,22 @@ function getObjectWithSelectedFieldsFunction(fields) {
     }
 }
 
-// TODO think about taking - and + out and into params.
 function getCompareItemByFieldFunction(field, isDate, ascending) {
+    let value1, value2;
+
+    function setValues(item1, item2, field) {
+        value1 = item1[field];
+        value2 = item2[field];
+
+        if (isDate) {
+            value1 = new Date(value1);
+            value2 = new Date(value2);
+        }
+    }
+
     if (!ascending) {
         return (item1, item2) => {
-            let value1 = item1[field];
-            let value2 = item2[field];
-
-            if (isDate) {
-                value1 = new Date(value1);
-                value2 = new Date(value2);
-            }
+            setValues(item1, item2, field);
 
             if (value1 < value2) {
                 return 1;
@@ -124,13 +130,7 @@ function getCompareItemByFieldFunction(field, isDate, ascending) {
         }
     } else {
         return (item1, item2) => {
-            let value1 = item1[field];
-            let value2 = item2[field];
-
-            if (isDate) {
-                value1 = new Date(value1);
-                value2 = new Date(value2);
-            }
+            setValues(item1, item2, field);
 
             if (value1 > value2) {
                 return 1;
@@ -173,9 +173,48 @@ const bottleValidations = [
         .withMessage('Field is required and must be in ISO8601 format.')
 ];
 
+let validations = [];
+let testValidations = (req, res, next) => {
+    console.log("reached");
+    next()
+};
 
-// TODO change properties or delete and add new object each time?
-router.put("/", bottleValidations,
+function setValidations(arrayValidations, objectValidations) {
+    return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
+}
+
+router.post("/",
+    (req, res) => req.body instanceof Array ? [] : bottleValidations,
+    (req, res) => {
+        const errors = validationResult(req);
+
+        if (errors.isEmpty()) {
+
+            if (getIndexOfBottleByID(req.body.id) !== -1) {
+                res.status(httpStatusCodes.CONFLICT)
+                    .json(
+                    {
+                        error: `A bottle with the ID '${req.body.id}' already exists.`
+                    }
+                    )
+            } else {
+                bottles.push(addLinksToBottle(
+                    req.body,
+                    [
+                        ["self", concatURLs(req.originalUrl, req.body.id)]
+                    ]
+                )
+                );
+
+                res.status(httpStatusCodes.CREATED).send();
+            }
+        } else {
+            sendUnprocessableEntityError(errors, res);
+        }
+    });
+
+router.put("/",
+    (req, res) => req.body instanceof Array ? [] : bottleValidations,
     (req, res) => {
         const errors = validationResult(req);
 
@@ -205,35 +244,6 @@ router.put("/", bottleValidations,
 function concatURLs(url1, url2) {
     return `${url1.replace(/\/*$/, "/")}${url2}`
 }
-
-router.post("/", bottleValidations,
-    (req, res) => {
-        const errors = validationResult(req);
-
-        if (errors.isEmpty()) {
-
-            if (getIndexOfBottleByID(req.body.id) !== -1) {
-                res.status(httpStatusCodes.CONFLICT)
-                    .json(
-                    {
-                        error: `A bottle with the ID '${req.body.id}' already exists.`
-                    }
-                    )
-            } else {
-                bottles.push(addLinksToBottle(
-                    req.body,
-                    [
-                        ["self", concatURLs(req.originalUrl, req.body.id)]
-                    ]
-                )
-                );
-
-                res.status(httpStatusCodes.CREATED).send();
-            }
-        } else {
-            sendUnprocessableEntityError(errors, res);
-        }
-    });
 
 function getIndexOfBottleByID(id) {
     return bottles.findIndex(
