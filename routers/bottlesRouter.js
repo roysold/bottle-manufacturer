@@ -49,19 +49,9 @@ let testBottleValidations = [(req, res, next) => {
 }];
 
 router.use("/", (req, res, next) => {
-    let validationsDynamicMiddleware = new ConnectSequence(req, res, next)//.
-    // .appendListIf(req => req.body instanceof Array, testArrayValidations)
-    // .run()
-
-    if (req.body instanceof Array) {
-        // validationsDynamicMiddleware = DynamicMiddleWare.create(testValidations);
-        validationsDynamicMiddleware.appendList(testArrayValidations)//.run();
-    } else {
-        // validationsDynamicMiddleware = DynamicMiddleWare.create((req, res, next) => { console.log("bottles"); next(); });
-        validationsDynamicMiddleware.appendList(testBottleValidations)//.run();
-    }
-
-    validationsDynamicMiddleware.run();
+    new ConnectSequence(req, res, next)
+        .appendList(req.body instanceof Array ? testArrayValidations : testBottleValidations)
+        .run();
 });
 
 let bottleObjectSample = getObjectWithoutLinks(bottles[0]);
