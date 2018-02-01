@@ -3,7 +3,9 @@ const httpStatusCodes = require("http-status-codes");
 let bodyParser = require("body-parser");
 let { body, query, validationResult } = require('express-validator/check');
 let bottles = require("../data/bottles.json");
+let ConnectSequence = require('connect-sequence');
 
+// let DynamicMiddleWare = require('dynamic-middleware');
 let router = express.Router();
 
 bottles = bottles.map(bottle => addLinksToBottle(
@@ -15,15 +17,61 @@ bottles = bottles.map(bottle => addLinksToBottle(
 
 router.use(bodyParser.json());
 
-router.use(function (err, req, res, next) {
+router.use((err, req, res, next) => {
     if (err instanceof SyntaxError) {
         res.status(httpStatusCodes.BAD_REQUEST)
             .send("Invalid JSON syntax.");
     }
 });
 
-let bottleObjectSample = Object.assign({}, bottles[0]);
-delete bottleObjectSample.links;
+
+// let validationsDynamicMiddleware = DynamicMiddleWare.create(testValidations);
+
+// TODO validate that we don't get any extra unwanted properties
+const bottleValidations = [
+    body(["id", "orderID", "factoryID"])
+        .isAlphanumeric()
+        .withMessage('Field is required. Must be a string. Must not be empty.'),
+    body("creationDate")
+        .isISO8601()
+        .withMessage('Field is required and must be in ISO8601 format.')
+];
+
+
+let testArrayValidations = [(req, res, next) => {
+    console.log("array validations");
+    next();
+}];
+
+let testBottleValidations = [(req, res, next) => {
+    console.log("bottle validations");
+    next();
+}];
+
+router.use("/", (req, res, next) => {
+    let validationsDynamicMiddleware = new ConnectSequence(req, res, next)//.
+    // .appendListIf(req => req.body instanceof Array, testArrayValidations)
+    // .run()
+
+    if (req.body instanceof Array) {
+        // validationsDynamicMiddleware = DynamicMiddleWare.create(testValidations);
+        validationsDynamicMiddleware.appendList(testArrayValidations)//.run();
+    } else {
+        // validationsDynamicMiddleware = DynamicMiddleWare.create((req, res, next) => { console.log("bottles"); next(); });
+        validationsDynamicMiddleware.appendList(testBottleValidations)//.run();
+    }
+
+    validationsDynamicMiddleware.run();
+});
+
+let bottleObjectSample = getObjectWithoutLinks(bottles[0]);
+
+function getObjectWithoutLinks(obj) {
+    let newObject = Object.assign({}, obj);
+    delete newObject.links;
+
+    return newObject;
+}
 
 function isInSortFormat(value) {
     let field = value.replace(/^(\+|-)/, "");
@@ -163,28 +211,12 @@ router.delete("/:id", (req, res) => {
         .send("Bottle deleted.");
 });
 
-// TODO validate that we don't get any extra unwanted properties
-const bottleValidations = [
-    body(["id", "orderID", "factoryID"])
-        .isAlphanumeric()
-        .withMessage('Field is required. Must be a string. Must not be empty.'),
-    body("creationDate")
-        .isISO8601()
-        .withMessage('Field is required and must be in ISO8601 format.')
-];
-
-let validations = [];
-let testValidations = (req, res, next) => {
-    console.log("reached");
-    next()
-};
 
 function setValidations(arrayValidations, objectValidations) {
     return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
 }
 
 router.post("/",
-    (req, res) => req.body instanceof Array ? [] : bottleValidations,
     (req, res) => {
         const errors = validationResult(req);
 
@@ -214,7 +246,6 @@ router.post("/",
     });
 
 router.put("/",
-    (req, res) => req.body instanceof Array ? [] : bottleValidations,
     (req, res) => {
         const errors = validationResult(req);
 

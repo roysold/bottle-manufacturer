@@ -18,6 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "connect-sequence": "^2.1.1",
+    "dynamic-middleware": "^4.0.1",
     "express": "^4.16.2",
     "express-validator": "^4.3.0",
     "express-validators": "^1.0.4"
