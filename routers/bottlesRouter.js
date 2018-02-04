@@ -2,6 +2,7 @@ let express = require('express');
 const httpStatusCodes = require("http-status-codes");
 let bodyParser = require("body-parser");
 let { body, query, validationResult } = require('express-validator/check');
+const validator = require("validator");
 let bottles = require("../data/bottles.json");
 let ConnectSequence = require('connect-sequence');
 
@@ -28,33 +29,125 @@ router.use((err, req, res, next) => {
 // let validationsDynamicMiddleware = DynamicMiddleWare.create(testValidations);
 
 // TODO validate that we don't get any extra unwanted properties
-const bottleValidations = [
-    body(["id", "orderID", "factoryID"])
-        .isAlphanumeric()
-        .withMessage('Field is required. Must be a string. Must not be empty.'),
-    body("creationDate")
-        .isISO8601()
-        .withMessage('Field is required and must be in ISO8601 format.')
-];
+function bottleValidations(req, res, next) {
+    res.locals.errors = [];
+    res.locals.errors.push(validateBottle(req.body));
 
-
-let testArrayValidations = [(req, res, next) => {
-    console.log("array validations");
     next();
-}];
+}
 
-let testBottleValidations = [(req, res, next) => {
-    console.log("bottle validations");
-    next();
-}];
+function bottlesListValidations(req, res, next) {
+    res.locals.errors = [];
+    let ids = new Map();
+    let hasIdConflict = false;
+
+    // Check for ID conflicts.
+    for (let bottleIndex = 0; !hasIdConflict && bottleIndex < req.body.length; bottleIndex++) {
+        if (ids.has(bottle.id)) {
+            hasIdConflict = true;
+        } else {
+            ids.set(bottle.id, 0);
+        }
+    }
+
+    if (!hasIdConflict) {
+        req.body.forEach(
+            bottle => res.locals.errors.push(
+                validateBottle(req.body)
+            )
+        );
+
+        // Filter out empty objects.
+        res.locals.errors = res.locals.errors.filter(
+            error => Object.keys(error).length
+        );
+
+        next();
+    } else {
+        next(new ConflictError("Conflicting IDs in list."));
+    }
+}
+
+class ConflictError extends Error {
+    constructor(message) {
+        super(message);
+    }
+}
+
+function validateBottle(bottle, index) {
+    let errorObj = {};
+    let alphanumericPropertiesToValidate = ["id", "orderID", "factoryID"];
+
+    alphanumericPropertiesToValidate.forEach(property => {
+        if (!isString(property) ||
+            !validator.isAlphanumeric(id)) {
+            addError(
+                property,
+                bottle[property] === undefined ? "" : bottle[property],
+                "ID is required. Must be a string. Must not be empty."
+            );
+        }
+    });
+
+    if (!isString(creationDate) ||
+        !validator.isISO8601(creationDate)) {
+        addError(
+            "creationDate",
+            creationDate === undefined ? "" : creationDate,
+            "Field is required and must be in ISO8601 format."
+        );
+    }
+
+    (function hasCorrectProperties(objToCheck, properObj) {
+        for (property in objToCheck) {
+            if (!Object.keys(properObj).includes(property)) {
+                addError(property, objToCheck[property], `${value} is not a property`)
+            }
+        }
+    })(bottle, properBottleObject);
+
+    function isString(value) {
+        return typeof value === "string";
+    }
+
+    function addError(property, value, msg) {
+        errorObj.errors[property] = {
+            location: `body[${index}]`,
+            value: value,
+            msg: msg
+        }
+    }
+
+    return errorObj;
+}
+
+// ERROR FORMAT
+// {
+//     "errors": {
+//         "limit": {
+//             "location": "query",
+//             "param": "limit",
+//             "value": "23ds",
+//             "msg": "Needs to be an integer."
+//         },
+//         "sort": {
+//             "location": "query",
+//             "param": "sort",
+//             "value": "+factoryIDdsas",
+//             "msg": "Needs to be either <field_name>, +<field_name>, -<field_name>."
+//         }
+//     }
+// }
+
+
 
 router.use("/", (req, res, next) => {
     new ConnectSequence(req, res, next)
-        .appendList(req.body instanceof Array ? testArrayValidations : testBottleValidations)
+        .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
         .run();
 });
 
-let bottleObjectSample = getObjectWithoutLinks(bottles[0]);
+let properBottleObject = getObjectWithoutLinks(bottles[0]);
 
 function getObjectWithoutLinks(obj) {
     let newObject = Object.assign({}, obj);
@@ -66,13 +159,13 @@ function getObjectWithoutLinks(obj) {
 function isInSortFormat(value) {
     let field = value.replace(/^(\+|-)/, "");
 
-    return Object.keys(bottleObjectSample).includes(field);
+    return Object.keys(properBottleObject).includes(field);
 }
 
 const queryValidations = [
     query("fields")
         .optional()
-        .isIn(Object.keys(bottleObjectSample))
+        .isIn(Object.keys(properBottleObject))
         .withMessage("Needs to be one or more real fields."),
     query(["offset", "limit"])
         .optional()
@@ -123,12 +216,13 @@ router.get("/", queryValidations, (req, res) => {
                 : rangedBottles;
 
         res.json(manipulatedBottles);
-    } else {
+    } else { // TODO send to next(err)?
         res.status(httpStatusCodes.BAD_REQUEST)
             .json({ errors: errors.mapped() });
     }
 });
 
+// Try not returning a function
 function getObjectWithSelectedFieldsFunction(fields) {
     return obj => {
         let objWithSelectedfields = {};
@@ -233,7 +327,8 @@ router.post("/",
         } else {
             sendUnprocessableEntityError(errors, res);
         }
-    });
+    }
+);
 
 router.put("/",
     (req, res) => {
@@ -260,10 +355,20 @@ router.put("/",
         } else {
             sendUnprocessableEntityError(errors, res);
         }
-    });
+    }
+);
+
+// TODO send errors object, add errors object as property of ConflictError.
+router.use("/", (err, req, res, next) => {
+    if (err instanceof ConflictError) {
+        res.status(httpStatusCodes.CONFLICT).send(err.message);
+    } else {
+        next();
+    }
+});
 
 function concatURLs(url1, url2) {
-    return `${url1.replace(/\/*$/, "/")}${url2}`
+    return `${url1.replace(/\/*$/, "/")}${url2}`;
 }
 
 function getIndexOfBottleByID(id) {
