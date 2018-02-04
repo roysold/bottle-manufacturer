@@ -1,48 +1,48 @@
 [
     {
-        "ID": "1",
+        "id": "1",
         "creationDate": "2017-11-01",
         "orderID": "1",
         "factoryID": "1"
     },
     {
-        "ID": "2",
+        "id": "2",
         "creationDate": "2017-11-01",
         "orderID": "1",
         "factoryID": "1"
     },
     {
-        "ID": "3",
+        "id": "3",
         "creationDate": "2017-11-02",
         "orderID": "1",
         "factoryID": "1"
     },
     {
-        "ID": "4",
+        "id": "4",
         "creationDate": "2017-11-02",
         "orderID": "2",
         "factoryID": "1"
     },
     {
-        "ID": "5",
+        "id": "5",
         "creationDate": "2017-11-02",
         "orderID": "2",
         "factoryID": "1"
     },
     {
-        "ID": "6",
+        "id": "6",
         "creationDate": "2017-11-04",
         "orderID": "2",
         "factoryID": "1"
     },
     {
-        "ID": "7",
+        "id": "7",
         "creationDate": "2017-11-12",
         "orderID": "3",
         "factoryID": "2"
     },
     {
-        "ID": "8",
+        "id": "8",
         "creationDate": "2017-11-12",
         "orderID": "3",
         "factoryID": "2"

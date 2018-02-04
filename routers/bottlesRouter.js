@@ -53,7 +53,7 @@ const IDGenerator = generateNextBottleID(9);
 //     }
 // }
 
-router.post("/", (req, res, next) => {
+router.use("/", (req, res, next) => {
     new ConnectSequence(req, res, next)
         .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
         .run();
@@ -122,7 +122,7 @@ function validateBottlesByHTTPMethod(method) {
             // In PUT, bottles in body don't require all properties, except ID.
             req.body.forEach(
                 (bottle, index) => {
-                    propertiesToValidate = PUTPropertiesToValidate(bottle, req.method);
+                    propertiesToValidate = PUTPropertiesToValidate(bottle);
 
                     res.locals.errors.push(
                         getValidateBottleFunction(propertiesToValidate)(bottle, index)
@@ -134,17 +134,17 @@ function validateBottlesByHTTPMethod(method) {
     }
 }
 
+function POSTPropertiesToValidate() {
+    let properties = Object.keys(properBottleObject);
+    properties.splice(properties.indexOf("ID"), 1);
+
+    return properties;
+}
+
 function PUTPropertiesToValidate(bottle) {
     return Object.keys(bottle).filter(
         property => Object.keys(properBottleObject).includes(property)
     );
-}
-
-function POSTPropertiesToValidate() {
-    let properties = Object.keys(properBottleObject);
-    properties.splice(propertiesToValidate.indexOf("ID"), 1);
-
-    return properties;
 }
 
 function hasIDConflicts(list) {
@@ -167,7 +167,7 @@ function hasIDConflicts(list) {
     return hasIDConflict;
 }
 
-let properBottleObject = {
+const properBottleObject = {
     "ID": "1",
     "creationDate": "2017-11-01",
     "orderID": "1",
@@ -327,9 +327,7 @@ function setValidations(arrayValidations, objectValidations) {
 
 router.post("/",
     (req, res) => {
-        const errors = validationResult(req);
-
-        if (errors.isEmpty()) {
+        if (!res.locals.errors.length) {
 
             if (getIndexOfBottleByID(req.body.id) !== -1) {
                 next(new ConflictError(`A bottle with the ID '${req.body.id}' already exists.`, req.body.id));
@@ -352,16 +350,14 @@ router.post("/",
                 res.status(httpStatusCodes.CREATED).send();
             }
         } else {
-            sendUnprocessableEntityError(errors, res);
+            sendUnprocessableEntityError(res.locals.errors, res);
         }
     }
 );
 
 router.put("/",
     (req, res) => {
-        const errors = validationResult(req);
-
-        if (errors.isEmpty()) {
+        if (!res.locals.errors.length) {
             let indexOfBottleToModify = getIndexOfBottleByID(req.body.id);
 
             if (indexOfBottleToModify !== -1) {
@@ -380,7 +376,7 @@ router.put("/",
                 sendBottleIDNotFoundError(req.body.id, res);
             }
         } else {
-            sendUnprocessableEntityError(errors, res);
+            sendUnprocessableEntityError(res.locals.errors, res);
         }
     }
 );
@@ -414,7 +410,7 @@ function sendBottleIDNotFoundError(id, res) {
 
 function sendUnprocessableEntityError(errors, res) {
     res.status(httpStatusCodes.UNPROCESSABLE_ENTITY)
-        .json({ errors: errors.mapped() });
+        .json(errors);//{ errors: errors.mapped() }); TODO for query
 }
 
 // param: linkDataToAdd - A list of lists, 
