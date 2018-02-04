@@ -5,9 +5,9 @@ let { body, query, validationResult } = require('express-validator/check');
 const validator = require("validator");
 let bottles = require("../data/bottles.json");
 let ConnectSequence = require('connect-sequence');
-
-// let DynamicMiddleWare = require('dynamic-middleware');
+let ConflictError = require("../errorTypes/ConflictError.js");
 let router = express.Router();
+const getValidateBottleFunction = require("../bottlesValidation/bottleValidation.js");
 
 bottles = bottles.map(bottle => addLinksToBottle(
     bottle,
@@ -25,101 +25,15 @@ router.use((err, req, res, next) => {
     }
 });
 
+function* generateNextBottleID(startID) {
+    let currentID = startID;
 
-// let validationsDynamicMiddleware = DynamicMiddleWare.create(testValidations);
-
-// TODO validate that we don't get any extra unwanted properties
-function bottleValidations(req, res, next) {
-    res.locals.errors = [];
-    res.locals.errors.push(validateBottle(req.body));
-
-    next();
-}
-
-function bottlesListValidations(req, res, next) {
-    res.locals.errors = [];
-    let ids = new Map();
-    let hasIdConflict = false;
-
-    // Check for ID conflicts.
-    for (let bottleIndex = 0; !hasIdConflict && bottleIndex < req.body.length; bottleIndex++) {
-        if (ids.has(bottle.id)) {
-            hasIdConflict = true;
-        } else {
-            ids.set(bottle.id, 0);
-        }
-    }
-
-    if (!hasIdConflict) {
-        req.body.forEach(
-            bottle => res.locals.errors.push(
-                validateBottle(req.body)
-            )
-        );
-
-        // Filter out empty objects.
-        res.locals.errors = res.locals.errors.filter(
-            error => Object.keys(error).length
-        );
-
-        next();
-    } else {
-        next(new ConflictError("Conflicting IDs in list."));
+    while (true) {
+        yield String(currentID++);
     }
 }
 
-class ConflictError extends Error {
-    constructor(message) {
-        super(message);
-    }
-}
-
-function validateBottle(bottle, index) {
-    let errorObj = {};
-    let alphanumericPropertiesToValidate = ["id", "orderID", "factoryID"];
-
-    alphanumericPropertiesToValidate.forEach(property => {
-        if (!isString(property) ||
-            !validator.isAlphanumeric(id)) {
-            addError(
-                property,
-                bottle[property] === undefined ? "" : bottle[property],
-                "ID is required. Must be a string. Must not be empty."
-            );
-        }
-    });
-
-    if (!isString(creationDate) ||
-        !validator.isISO8601(creationDate)) {
-        addError(
-            "creationDate",
-            creationDate === undefined ? "" : creationDate,
-            "Field is required and must be in ISO8601 format."
-        );
-    }
-
-    (function hasCorrectProperties(objToCheck, properObj) {
-        for (property in objToCheck) {
-            if (!Object.keys(properObj).includes(property)) {
-                addError(property, objToCheck[property], `${value} is not a property`)
-            }
-        }
-    })(bottle, properBottleObject);
-
-    function isString(value) {
-        return typeof value === "string";
-    }
-
-    function addError(property, value, msg) {
-        errorObj.errors[property] = {
-            location: `body[${index}]`,
-            value: value,
-            msg: msg
-        }
-    }
-
-    return errorObj;
-}
+const IDGenerator = generateNextBottleID(9);
 
 // ERROR FORMAT
 // {
@@ -139,15 +53,126 @@ function validateBottle(bottle, index) {
 //     }
 // }
 
-
-
-router.use("/", (req, res, next) => {
+router.post("/", (req, res, next) => {
     new ConnectSequence(req, res, next)
         .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
         .run();
 });
 
-let properBottleObject = getObjectWithoutLinks(bottles[0]);
+function bottleValidations(req, res, next) {
+    res.locals.errors = [];
+
+    let validateBottle;
+
+    if (req.method === "POST") {
+        validateBottle =
+            getValidateBottleFunction(
+                POSTPropertiesToValidate(req.body)
+            );
+    } else if (req.method === "PUT") {
+        validateBottle =
+            getValidateBottleFunction(
+                PUTPropertiesToValidate(req.body)
+            );
+    }
+
+    res.locals.errors.push(validateBottle(req.body));
+
+    next();
+}
+
+function bottlesListValidations(req, res, next) {
+    let validateBottles = validateBottlesByHTTPMethod(req.method);
+
+    validateBottles(req, res);
+
+    // Filter out empty error objects.
+    res.locals.errors = res.locals.errors.filter(
+        error => Object.keys(error).length
+    );
+
+    next();
+}
+
+function validateBottlesByHTTPMethod(method) {
+    if (method.toUpperCase() === "POST") {
+
+        return (req, res) => {
+            res.locals.errors = [];
+            let propertiesToValidate;
+
+            // In POST, bottles in body must have all properties except for ID.
+            propertiesToValidate = POSTPropertiesToValidate();
+
+            let validateBottleForPOST = getValidateBottleFunction(propertiesToValidate);
+
+            req.body.forEach(
+                (bottle, index) => res.locals.errors.push(
+                    validateBottleForPOST(bottle, index)
+                )
+            )
+        }
+
+    } else if (method.toUpperCase() === "PUT") {
+
+        return (req, res) => {
+            res.locals.errors = [];
+            let propertiesToValidate;
+
+            // In PUT, bottles in body don't require all properties, except ID.
+            req.body.forEach(
+                (bottle, index) => {
+                    propertiesToValidate = PUTPropertiesToValidate(bottle, req.method);
+
+                    res.locals.errors.push(
+                        getValidateBottleFunction(propertiesToValidate)(bottle, index)
+                    )
+                }
+            )
+        }
+
+    }
+}
+
+function PUTPropertiesToValidate(bottle) {
+    return Object.keys(bottle).filter(
+        property => Object.keys(properBottleObject).includes(property)
+    );
+}
+
+function POSTPropertiesToValidate() {
+    let properties = Object.keys(properBottleObject);
+    properties.splice(propertiesToValidate.indexOf("ID"), 1);
+
+    return properties;
+}
+
+function hasIDConflicts(list) {
+    let IDs = new Map();
+    let hasIDConflict = false;
+    let conflictingID;
+
+    // Check for ID conflicts.
+    for (let index = 0;
+        !hasIDConflict && (index < list.length);
+        index++) {
+        if (IDs.has(list[index].id)) {
+            hasIDConflict = true;
+            conflictingID = list[index].id;
+        } else {
+            IDs.set(list[index].id, 0);
+        }
+    }
+
+    return hasIDConflict;
+}
+
+let properBottleObject = {
+    "ID": "1",
+    "creationDate": "2017-11-01",
+    "orderID": "1",
+    "factoryID": "1"
+};
 
 function getObjectWithoutLinks(obj) {
     let newObject = Object.assign({}, obj);
@@ -307,6 +332,8 @@ router.post("/",
         if (errors.isEmpty()) {
 
             if (getIndexOfBottleByID(req.body.id) !== -1) {
+                next(new ConflictError(`A bottle with the ID '${req.body.id}' already exists.`, req.body.id));
+
                 res.status(httpStatusCodes.CONFLICT)
                     .json(
                     {
@@ -361,7 +388,7 @@ router.put("/",
 // TODO send errors object, add errors object as property of ConflictError.
 router.use("/", (err, req, res, next) => {
     if (err instanceof ConflictError) {
-        res.status(httpStatusCodes.CONFLICT).send(err.message);
+        res.status(err.httpErrorCode).send(err.errorJSON);
     } else {
         next();
     }
@@ -409,4 +436,4 @@ function addLinksToBottle(obj, linkDataToAdd) {
     return objectToReturn;
 }
 
-module.exports = router;
+module.exports.router = router;
