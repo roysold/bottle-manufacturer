@@ -6,6 +6,9 @@ const validator = require("validator");
 let bottles = require("../data/bottles.json");
 let ConnectSequence = require('connect-sequence');
 let ConflictError = require("../errorTypes/ConflictError.js");
+let UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
+let IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
+let BadQueryError = require("../errorTypes/BadQueryError.js");
 let router = express.Router();
 const getValidateBottleFunction = require("../bottlesValidation/bottleValidation.js");
 
@@ -53,38 +56,77 @@ const IDGenerator = generateNextBottleID(9);
 //     }
 // }
 
-router.use("/", (req, res, next) => {
-    new ConnectSequence(req, res, next)
-        .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
-        .run();
-});
+router.route("/")
+    .post((req, res, next) => {
+        new ConnectSequence(req, res, next)
+            .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
+            .run();
+    })
+    .put((req, res, next) => {
+        new ConnectSequence(req, res, next)
+            .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
+            .run();
+    });
 
 function bottleValidations(req, res, next) {
     res.locals.errors = [];
-
-    let validateBottle;
+    let propertiesToValidate;
 
     if (req.method === "POST") {
-        validateBottle =
-            getValidateBottleFunction(
-                POSTPropertiesToValidate(req.body)
-            );
+        propertiesToValidate = getPropertiesToValidateForPOSTBody();
     } else if (req.method === "PUT") {
-        validateBottle =
-            getValidateBottleFunction(
-                PUTPropertiesToValidate(req.body)
-            );
+        propertiesToValidate = getPropertiesToValidateForPUTBody(req.body);
     }
 
-    res.locals.errors.push(validateBottle(req.body));
+    let validateBottle = getValidateBottleFunction(propertiesToValidate);
+
+    appendErrorIfNotEmpty(res, validateBottle(req.body));
 
     next();
 }
 
-function bottlesListValidations(req, res, next) {
-    let validateBottles = validateBottlesByHTTPMethod(req.method);
+function appendErrorIfNotEmpty(res, errorObj) {
+    if (Object.keys(errorObj).length) {
+        res.locals.errors.push(errorObj);
+    }
+}
 
-    validateBottles(req, res);
+function getPropertiesToValidateForPOSTBody() {
+    let properties = Object.keys(properBottleObject);
+    properties.splice(properties.indexOf("id"), 1);
+
+    return properties;
+}
+
+function getPropertiesToValidateForPUTBody(bottle) {
+    let properties = Object.keys(bottle).filter(
+        property => Object.keys(properBottleObject).includes(property)
+    );
+
+    properties.unshift("id");
+
+    return properties;
+}
+
+// function propertiesToValidateFunctionByHTTPMethod(req) {
+//     if (req.method === "POST") {
+//         return () => {
+//             let properties = Object.keys(properBottleObject);
+//             properties.splice(properties.indexOf("id"), 1);
+
+//             return properties;
+//         }
+//     } else if (req.method === "PUT") {
+//         return (bottle) => Object.keys(bottle).filter(
+//             property => Object.keys(properBottleObject).includes(property)
+//         );
+//     }
+// }
+
+function bottlesListValidations(req, res, next) {
+    let validateBottles = validateBottlesFunctionByHTTPMethod(req.method);
+
+    validateBottles(req, res, next);
 
     // Filter out empty error objects.
     res.locals.errors = res.locals.errors.filter(
@@ -94,63 +136,62 @@ function bottlesListValidations(req, res, next) {
     next();
 }
 
-function validateBottlesByHTTPMethod(method) {
+function validateBottlesFunctionByHTTPMethod(method) {
     if (method.toUpperCase() === "POST") {
-
         return (req, res) => {
             res.locals.errors = [];
-            let propertiesToValidate;
+            let propertiesToValidate = getPropertiesToValidateForPOSTBody();
+            let validateBottle = getValidateBottleFunction(propertiesToValidate);
 
             // In POST, bottles in body must have all properties except for ID.
-            propertiesToValidate = POSTPropertiesToValidate();
-
-            let validateBottleForPOST = getValidateBottleFunction(propertiesToValidate);
-
-            req.body.forEach(
-                (bottle, index) => res.locals.errors.push(
-                    validateBottleForPOST(bottle, index)
-                )
-            )
-        }
-
-    } else if (method.toUpperCase() === "PUT") {
-
-        return (req, res) => {
-            res.locals.errors = [];
-            let propertiesToValidate;
-
-            // In PUT, bottles in body don't require all properties, except ID.
             req.body.forEach(
                 (bottle, index) => {
-                    propertiesToValidate = PUTPropertiesToValidate(bottle);
-
-                    res.locals.errors.push(
-                        getValidateBottleFunction(propertiesToValidate)(bottle, index)
-                    )
+                    let bottleError = validateBottle(bottle, index);
+                    appendErrorIfNotEmpty(res, bottleError);
                 }
             )
         }
+    } else if (method.toUpperCase() === "PUT") {
+        return (req, res, next) => {
+            res.locals.errors = [];
+            // In PUT, bottles in body don't require all properties, except ID.
 
+            req.body.forEach(
+                (bottle, index) => {
+                    let propertiesToValidate = getPropertiesToValidateForPUTBody(bottle);
+                    let validateBottle = getValidateBottleFunction(propertiesToValidate);
+
+                    let bottleError = validateBottle(bottle, index);
+                    appendErrorIfNotEmpty(res, bottleError);
+                }
+            )
+
+            const conflictingID = findConflictingIDInList(req.body);
+
+            if (conflictingID !== "") {
+                next(new ConflictError(conflictingID));
+            }
+        }
     }
 }
 
-function POSTPropertiesToValidate() {
-    let properties = Object.keys(properBottleObject);
-    properties.splice(properties.indexOf("ID"), 1);
+// function POSTPropertiesToValidate() {
+//     let properties = Object.keys(properBottleObject);
+//     properties.splice(properties.indexOf("ID"), 1);
 
-    return properties;
-}
+//     return properties;
+// }
 
-function PUTPropertiesToValidate(bottle) {
-    return Object.keys(bottle).filter(
-        property => Object.keys(properBottleObject).includes(property)
-    );
-}
+// function PUTPropertiesToValidate(bottle) {
+//     return Object.keys(bottle).filter(
+//         property => Object.keys(properBottleObject).includes(property)
+//     );
+// }
 
-function hasIDConflicts(list) {
+function findConflictingIDInList(list) {
     let IDs = new Map();
     let hasIDConflict = false;
-    let conflictingID;
+    let conflictingID = "";
 
     // Check for ID conflicts.
     for (let index = 0;
@@ -164,11 +205,11 @@ function hasIDConflicts(list) {
         }
     }
 
-    return hasIDConflict;
+    return conflictingID;
 }
 
 const properBottleObject = {
-    "ID": "1",
+    "id": "1",
     "creationDate": "2017-11-01",
     "orderID": "1",
     "factoryID": "1"
@@ -206,7 +247,7 @@ const queryValidations = [
 // Route sorts by descending id, ascending creationDate
 // and factoryID, displays id, orderID
 // and factoryID fields and gets only the second last object.
-router.get("/", queryValidations, (req, res) => {
+router.get("/", queryValidations, (req, res, next) => {
     const errors = validationResult(req);
 
     if (errors.isEmpty()) {
@@ -241,9 +282,8 @@ router.get("/", queryValidations, (req, res) => {
                 : rangedBottles;
 
         res.json(manipulatedBottles);
-    } else { // TODO send to next(err)?
-        res.status(httpStatusCodes.BAD_REQUEST)
-            .json({ errors: errors.mapped() });
+    } else {
+        next(new BadQueryError({ errors: errors.mapped() }));
     }
 });
 
@@ -325,69 +365,79 @@ function setValidations(arrayValidations, objectValidations) {
     return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
 }
 
+function getBottleToAdd(bottle) {
+    return {
+        id: IDGenerator.next().value,
+        creationDate: bottle.creationDate,
+        orderID: bottle.orderID,
+        factoryID: bottle.factoryID
+    };
+}
+
 router.post("/",
-    (req, res) => {
-        if (!res.locals.errors.length) {
-
-            if (getIndexOfBottleByID(req.body.id) !== -1) {
-                next(new ConflictError(`A bottle with the ID '${req.body.id}' already exists.`, req.body.id));
-
-                res.status(httpStatusCodes.CONFLICT)
-                    .json(
-                    {
-                        error: `A bottle with the ID '${req.body.id}' already exists.`
-                    }
-                    )
-            } else {
-                bottles.push(addLinksToBottle(
-                    req.body,
-                    [
-                        ["self", concatURLs(req.originalUrl, req.body.id)]
-                    ]
-                )
-                );
-
-                res.status(httpStatusCodes.CREATED).send();
-            }
+    (req, res, next) => {
+        if (res.locals.errors.length) {
+            next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            sendUnprocessableEntityError(res.locals.errors, res);
+            const bottlesToAdd = req.body instanceof Array ? req.body : [req.body];
+
+            for (let bottleIndex = 0; bottleIndex < bottlesToAdd.length; bottleIndex++) {
+                let bottleToAdd = getBottleToAdd(bottlesToAdd[bottleIndex]);
+                bottleToAdd = addLinksToBottle(
+                    bottleToAdd,
+                    [
+                        ["self", concatURLs(req.originalUrl, bottleToAdd.id)]
+                    ]);
+
+                bottles.push(bottleToAdd);
+            }
+
+            res.status(httpStatusCodes.CREATED).send();
         }
     }
 );
 
 router.put("/",
-    (req, res) => {
-        if (!res.locals.errors.length) {
-            let indexOfBottleToModify = getIndexOfBottleByID(req.body.id);
+    (req, res, next) => {
+        if (res.locals.errors.length) {
+            next(new UnprocessableEntityError(res.locals.errors));
+        } else {
+            let bottlesFromBody = req.body instanceof Array ? req.body : [req.body];
+            let error;
 
-            if (indexOfBottleToModify !== -1) {
-                bottles.splice(indexOfBottleToModify, 1,
-                    addLinksToBottle(
-                        req.body,
-                        [
-                            ["self", concatURLs(req.originalUrl, req.body.id)]
-                        ]
-                    )
-                );
+            for (let bottleIndex = 0;
+                error === undefined && bottleIndex < bottlesFromBody.length;
+                bottleIndex++) {
+                let indexOfBottleToModify =
+                    getIndexOfBottleByID(
+                        bottlesFromBody[bottleIndex].id
+                    );
 
+                if (indexOfBottleToModify === -1) {
+                    error = new IDNotFoundError(indexOfBottleToModify.id);
+                } else {
+                    let bottleFromBody = bottlesFromBody[bottleIndex];
+                    let bottleToModify = bottles[indexOfBottleToModify];
+
+                    for (prop in properBottleObject) {
+                        if (bottleFromBody[prop] !== undefined) {
+                            bottleToModify[prop] = bottleFromBody[prop];
+                        }
+                    }
+                }
+            }
+
+            if (error === undefined) {
                 res.send();
             } else {
-                res.status(httpStatusCodes.BAD_REQUEST);
-                sendBottleIDNotFoundError(req.body.id, res);
+                next(error);
             }
-        } else {
-            sendUnprocessableEntityError(res.locals.errors, res);
         }
     }
 );
 
-// TODO send errors object, add errors object as property of ConflictError.
 router.use("/", (err, req, res, next) => {
-    if (err instanceof ConflictError) {
-        res.status(err.httpErrorCode).send(err.errorJSON);
-    } else {
-        next();
-    }
+    res.status(err.httpErrorCode).send(err.errorJSON);
 });
 
 function concatURLs(url1, url2) {
@@ -400,18 +450,18 @@ function getIndexOfBottleByID(id) {
     );
 }
 
-function sendBottleIDNotFoundError(id, res) {
-    res.json(
-        {
-            error: `No bottle with the ID '${id}'.`
-        }
-    );
-}
+// function sendBottleIDNotFoundError(id, res) {
+//     res.json(
+//         {
+//             error: `No bottle with the ID '${id}'.`
+//         }
+//     );
+// }
 
-function sendUnprocessableEntityError(errors, res) {
-    res.status(httpStatusCodes.UNPROCESSABLE_ENTITY)
-        .json(errors);//{ errors: errors.mapped() }); TODO for query
-}
+// function sendUnprocessableEntityError(res, errorsJSON) {
+//     res.status(httpStatusCodes.UNPROCESSABLE_ENTITY)
+//         .json(errorsJSON);//{ errors: errors.mapped() }); TODO for query
+// }
 
 // param: linkDataToAdd - A list of lists, 
 // where each inner list has the format: [rel, href].

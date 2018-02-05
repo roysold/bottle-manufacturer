@@ -8,7 +8,7 @@ let properBottleObject = {
     "factoryID": "1"
 };
 
-const alphanumericProperties = ["ID", "orderID", "factoryID"];
+const alphanumericProperties = ["id", "orderID", "factoryID"];
 const dateProperties = ["creationDate"];
 
 function isString(value) {
@@ -33,15 +33,7 @@ module.exports = function validateBottle(properties) {
         const alphanumericPropertiesToValidate =
             alphanumericProperties.filter(
                 propName =>
-                    bottle[propName] !== undefined &&
-                    alphanumericProperties.includes(propName)
-            );
-
-        const datePropertiesToValidate =
-            dateProperties.filter(
-                propName =>
-                    bottle[propName] !== undefined &&
-                    dateProperties.includes(propName)
+                    properties.includes(propName)
             );
 
         // Validate alphanumeric properties.
@@ -51,10 +43,16 @@ module.exports = function validateBottle(properties) {
                     new PropertyError(
                         index === -1 ? "body" : `body[${index}]`,
                         bottle[propName],
-                        "Must be a string. Must not be empty."
+                        "Must be an alphanumeric string without whitespace. Must not be empty."
                     );
             }
         });
+
+        const datePropertiesToValidate =
+            dateProperties.filter(
+                propName =>
+                    properties.includes(propName)
+            );
 
         // Validate date properties.
         datePropertiesToValidate.forEach(propName => {
@@ -63,21 +61,25 @@ module.exports = function validateBottle(properties) {
                     new PropertyError(
                         index === -1 ? "body" : `body[${index}]`,
                         bottle[propName],
-                        "Must be in ISO8601 format."
+                        "Must be a string in ISO8601 format."
                     );
             }
         });
 
-        // Check for properties that don't belong.
-        for (property in bottle) {
-            if (!properties.includes(property)) {
-                errorObj.errors[property] =
-                    new PropertyError(
-                        index === -1 ? "body" : `body[${index}]`,
-                        bottle[property],
-                        `${property} is not a property that can be included.`
-                    );
-            }
+        // // Check for properties that don't belong.
+        // for (property in bottle) {
+        //     if (!properties.includes(property)) {
+        //         errorObj.errors[property] =
+        //             new PropertyError(
+        //                 index === -1 ? "body" : `body[${index}]`,
+        //                 bottle[property],
+        //                 `${property} is not a property that can be included.`
+        //             );
+        //     }
+        // }
+
+        if (Object.keys(errorObj.errors).length === 0) {
+            errorObj = {};
         }
 
         return errorObj;

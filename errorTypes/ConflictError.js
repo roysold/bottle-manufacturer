@@ -1,6 +1,8 @@
+const httpStatusCodes = require("http-status-codes");
+
 class ConflictError extends Error {
-    constructor(message, id) {
-        super(message);
+    constructor(id) {
+        super("Conflicting IDs in body.");
         this.conflictingID = id;
     }
 
