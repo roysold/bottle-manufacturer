@@ -2,15 +2,23 @@ let express = require('express');
 const httpStatusCodes = require("http-status-codes");
 let bodyParser = require("body-parser");
 let { body, query, validationResult } = require('express-validator/check');
-const validator = require("validator");
 let bottles = require("../data/bottles.json");
 let ConnectSequence = require('connect-sequence');
 let ConflictError = require("../errorTypes/ConflictError.js");
 let UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
 let IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
 let BadQueryError = require("../errorTypes/BadQueryError.js");
+
+// const getValidateBottleFunction = require("../bodyValidation/bottleValidation.js");
+/* Query Validation */
+const queryValidator = require("../validators/queryValidator.js");
+const filteringQueryValidations = require("../queryValidationData/filteringQueryValidation.js");
+
+/* Body Validation */
+const bodyValidator = require("../validators/bodyValidator.js");
+const bottleBodyValidations = require("../bodyValidationData/bottleBodyValidation");
+
 let router = express.Router();
-const getValidateBottleFunction = require("../bottlesValidation/bottleValidation.js");
 
 bottles = bottles.map(bottle => addLinksToBottle(
     bottle,
@@ -38,47 +46,41 @@ function* generateNextBottleID(startID) {
 
 const IDGenerator = generateNextBottleID(9);
 
-// ERROR FORMAT
-// {
-//     "errors": {
-//         "limit": {
-//             "location": "query",
-//             "param": "limit",
-//             "value": "23ds",
-//             "msg": "Needs to be an integer."
-//         },
-//         "sort": {
-//             "location": "query",
-//             "param": "sort",
-//             "value": "+factoryIDdsas",
-//             "msg": "Needs to be either <field_name>, +<field_name>, -<field_name>."
-//         }
-//     }
-// }
-
 router.route("/")
     .post((req, res, next) => {
         new ConnectSequence(req, res, next)
-            .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
+            .append(Array.isArray(req.body) ? bottlesListValidations : bottleValidations)
             .run();
     })
     .put((req, res, next) => {
         new ConnectSequence(req, res, next)
-            .append(req.body instanceof Array ? bottlesListValidations : bottleValidations)
+            .append(Array.isArray(req.body) ? bottlesListValidations : bottleValidations)
             .run();
     });
 
+const propertiesToValidate = {
+    POST: () => {
+        let properties = Object.keys(properBottleObject);
+        properties.splice(properties.indexOf("id"), 1);
+
+        return properties;
+    },
+    PUT: (bottle) => {
+        let properties = Object.keys(bottle).filter(
+            property => Object.keys(properBottleObject).includes(property)
+        );
+
+        properties.unshift("id");
+
+        return properties;
+    }
+}
+
 function bottleValidations(req, res, next) {
     res.locals.errors = [];
-    let propertiesToValidate;
+    let properties = propertiesToValidate[req.method](req.body);
 
-    if (req.method === "POST") {
-        propertiesToValidate = getPropertiesToValidateForPOSTBody();
-    } else if (req.method === "PUT") {
-        propertiesToValidate = getPropertiesToValidateForPUTBody(req.body);
-    }
-
-    let validateBottle = getValidateBottleFunction(propertiesToValidate);
+    let validateBottle = getValidateBottleFunction(properties);
 
     appendErrorIfNotEmpty(res, validateBottle(req.body));
 
@@ -91,40 +93,8 @@ function appendErrorIfNotEmpty(res, errorObj) {
     }
 }
 
-function getPropertiesToValidateForPOSTBody() {
-    let properties = Object.keys(properBottleObject);
-    properties.splice(properties.indexOf("id"), 1);
-
-    return properties;
-}
-
-function getPropertiesToValidateForPUTBody(bottle) {
-    let properties = Object.keys(bottle).filter(
-        property => Object.keys(properBottleObject).includes(property)
-    );
-
-    properties.unshift("id");
-
-    return properties;
-}
-
-// function propertiesToValidateFunctionByHTTPMethod(req) {
-//     if (req.method === "POST") {
-//         return () => {
-//             let properties = Object.keys(properBottleObject);
-//             properties.splice(properties.indexOf("id"), 1);
-
-//             return properties;
-//         }
-//     } else if (req.method === "PUT") {
-//         return (bottle) => Object.keys(bottle).filter(
-//             property => Object.keys(properBottleObject).includes(property)
-//         );
-//     }
-// }
-
 function bottlesListValidations(req, res, next) {
-    let validateBottles = validateBottlesFunctionByHTTPMethod(req.method);
+    let validateBottles = validateBottlesFunction[req.method];
 
     validateBottles(req, res, next);
 
@@ -136,57 +106,41 @@ function bottlesListValidations(req, res, next) {
     next();
 }
 
-function validateBottlesFunctionByHTTPMethod(method) {
-    if (method.toUpperCase() === "POST") {
-        return (req, res) => {
-            res.locals.errors = [];
-            let propertiesToValidate = getPropertiesToValidateForPOSTBody();
-            let validateBottle = getValidateBottleFunction(propertiesToValidate);
 
-            // In POST, bottles in body must have all properties except for ID.
-            req.body.forEach(
-                (bottle, index) => {
-                    let bottleError = validateBottle(bottle, index);
-                    appendErrorIfNotEmpty(res, bottleError);
-                }
-            )
-        }
-    } else if (method.toUpperCase() === "PUT") {
-        return (req, res, next) => {
-            res.locals.errors = [];
-            // In PUT, bottles in body don't require all properties, except ID.
-
-            req.body.forEach(
-                (bottle, index) => {
-                    let propertiesToValidate = getPropertiesToValidateForPUTBody(bottle);
-                    let validateBottle = getValidateBottleFunction(propertiesToValidate);
-
-                    let bottleError = validateBottle(bottle, index);
-                    appendErrorIfNotEmpty(res, bottleError);
-                }
-            )
-
-            const conflictingID = findConflictingIDInList(req.body);
-
-            if (conflictingID !== "") {
-                next(new ConflictError(conflictingID));
+const validateBottlesFunction = {
+    POST: (req, res) => {
+        // In POST, bottles in body must have all properties except for ID.
+        res.locals.errors = [];
+        let properties = propertiesToValidate.POST();
+        let validateBottle = getValidateBottleFunction(properties);
+//TODO start using new class!
+        req.body.forEach(
+            (bottle, index) => {
+                let bottleError = validateBottle(bottle, index);
+                appendErrorIfNotEmpty(res, bottleError);
             }
+        )
+    },
+    PUT: (req, res, next) => {
+        // In PUT, bottles in body don't require all properties, except ID.
+        res.locals.errors = [];
+        req.body.forEach(
+            (bottle, index) => {
+                let properties = propertiesToValidate.PUT(bottle);
+                let validateBottle = getValidateBottleFunction(properties);
+
+                let bottleError = validateBottle(bottle, index);
+                appendErrorIfNotEmpty(res, bottleError);
+            }
+        )
+
+        const conflictingID = findConflictingIDInList(req.body);
+
+        if (conflictingID !== "") {
+            next(new ConflictError(conflictingID));
         }
     }
 }
-
-// function POSTPropertiesToValidate() {
-//     let properties = Object.keys(properBottleObject);
-//     properties.splice(properties.indexOf("ID"), 1);
-
-//     return properties;
-// }
-
-// function PUTPropertiesToValidate(bottle) {
-//     return Object.keys(bottle).filter(
-//         property => Object.keys(properBottleObject).includes(property)
-//     );
-// }
 
 function findConflictingIDInList(list) {
     let IDs = new Map();
@@ -228,29 +182,46 @@ function isInSortFormat(value) {
     return Object.keys(properBottleObject).includes(field);
 }
 
-const queryValidations = [
-    query("fields")
-        .optional()
-        .isIn(Object.keys(properBottleObject))
-        .withMessage("Needs to be one or more real fields."),
-    query(["offset", "limit"])
-        .optional()
-        .isNumeric()
-        .withMessage("Needs to be an integer."),
-    query("sort")
-        .optional()
-        .custom(isInSortFormat)
-        .withMessage("Needs to be either <field_name>, +<field_name>, -<field_name>.")
-];
+// const queryValidations = [
+//     query("fields")
+//         .optional()
+//         .isIn(Object.keys(properBottleObject))
+//         .withMessage("Needs to be one or more real fields."),
+//     query(["offset", "limit"])
+//         .optional()
+//         .isNumeric()
+//         .withMessage("Needs to be an integer."),
+//     query("sort")
+//         .optional()
+//         .custom(isInSortFormat)
+//         .withMessage("Needs to be either <field_name>, +<field_name>, -<field_name>.")
+// ];
+
+
+const filteringQueryValidator =
+    new queryValidator(
+        filteringQueryValidations(
+            Object.keys(properBottleObject)
+        )
+    );
+
+function queryValidations(req, res, next) {
+    res.locals.errors = [];
+    const queryError = filteringQueryValidator.validateQuery(req.query);
+
+    appendErrorIfNotEmpty(res, queryError);
+
+    next()
+}
 
 // example route: /api/v1/bottles?sort=-id,creationDate,\+factoryID&fields=id,orderID,factoryID&offset=-2&limit=1
 // Route sorts by descending id, ascending creationDate
 // and factoryID, displays id, orderID
 // and factoryID fields and gets only the second last object.
 router.get("/", queryValidations, (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (errors.isEmpty()) {
+    if (res.locals.errors.length) {
+        next(new BadQueryError(res.locals.errors));
+    } else {
         let { offset, limit, fields, sort } = req.query;
 
         sort = (sort === undefined) ? [] : sort.split(",");
@@ -258,64 +229,55 @@ router.get("/", queryValidations, (req, res, next) => {
         limit = (limit === undefined) ? bottles.length - offset : parseInt(limit);
         fields = (fields === undefined) ? undefined : fields.split(",");
 
-        let sortedBottles = bottles.slice();
-
-        for (let index = sort.length - 1; index >= 0; index--) {
-            let field = sort[index].replace(/^(\+|-)/, "");
-
-            sortedBottles.sort(
-                getCompareItemByFieldFunction(
-                    field,
-                    field === "creationDate",
-                    !sort[index].startsWith("-")
-                )
-            );
-        }
+        let sortedBottles = sortByField(bottles.slice(), sort);
 
         let rangedBottles = sortedBottles.slice(offset, offset + limit);
 
-        let manipulatedBottles =
+        let bottlesWithSelectedFields =
             fields ?
-                rangedBottles.map(
-                    getObjectWithSelectedFieldsFunction(fields)
-                )
+                getListWithSelectedFields(rangedBottles, fields)
                 : rangedBottles;
 
-        res.json(manipulatedBottles);
-    } else {
-        next(new BadQueryError({ errors: errors.mapped() }));
+        res.json(bottlesWithSelectedFields);
     }
 });
 
-// Try not returning a function
-function getObjectWithSelectedFieldsFunction(fields) {
-    return obj => {
-        let objWithSelectedfields = {};
+function sortByField(list, sortFields) {
+    let sortedList = list.slice().reverse();
 
-        fields.forEach(field => {
-            objWithSelectedfields[field] = obj[field];
-        });
+    for (sortField of sortFields) {
+        let field = sortField.replace(/^(\+|-)/, "");
 
-        return objWithSelectedfields;
+        sortedList.sort(
+            getCompareItemByFieldFunction(
+                field,
+                field === "creationDate",
+                !sortField.startsWith("-")
+            )
+        );
     }
+
+    return sortedList;
+}
+
+function getListWithSelectedFields(list, fields) {
+    return list.map(
+        obj => {
+            let objWithSelectedfields = {};
+
+            fields.forEach(field => {
+                objWithSelectedfields[field] = obj[field];
+            });
+
+            return objWithSelectedfields;
+        }
+    )
 }
 
 function getCompareItemByFieldFunction(field, isDate, ascending) {
-    let value1, value2;
-
-    function setValues(item1, item2, field) {
-        value1 = item1[field];
-        value2 = item2[field];
-
-        if (isDate) {
-            value1 = new Date(value1);
-            value2 = new Date(value2);
-        }
-    }
-
     if (!ascending) {
         return (item1, item2) => {
-            setValues(item1, item2, field);
+            let { value1, value2 } = getValues(item1, item2, field, isDate);
 
             if (value1 < value2) {
                 return 1;
@@ -327,7 +289,7 @@ function getCompareItemByFieldFunction(field, isDate, ascending) {
         }
     } else {
         return (item1, item2) => {
-            setValues(item1, item2, field);
+            let { value1, value2 } = getValues(item1, item2, field, isDate);
 
             if (value1 > value2) {
                 return 1;
@@ -337,6 +299,21 @@ function getCompareItemByFieldFunction(field, isDate, ascending) {
                 return 0;
             }
         }
+    }
+}
+
+function getValues(item1, item2, field, isDate) {
+    let value1 = item1[field];
+    let value2 = item2[field];
+
+    if (isDate) {
+        value1 = new Date(value1);
+        value2 = new Date(value2);
+    }
+
+    return {
+        value1: value1,
+        value2: value2
     }
 }
 
@@ -359,7 +336,6 @@ router.delete("/:id", (req, res) => {
     res.status(httpStatusCodes.ACCEPTED)
         .send("Bottle deleted.");
 });
-
 
 function setValidations(arrayValidations, objectValidations) {
     return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
@@ -416,14 +392,10 @@ router.put("/",
                 if (indexOfBottleToModify === -1) {
                     error = new IDNotFoundError(indexOfBottleToModify.id);
                 } else {
-                    let bottleFromBody = bottlesFromBody[bottleIndex];
                     let bottleToModify = bottles[indexOfBottleToModify];
+                    let bottleFromBody = bottlesFromBody[bottleIndex];
 
-                    for (prop in properBottleObject) {
-                        if (bottleFromBody[prop] !== undefined) {
-                            bottleToModify[prop] = bottleFromBody[prop];
-                        }
-                    }
+                    updateObject(bottleToModify, bottleFromBody)
                 }
             }
 
@@ -435,6 +407,14 @@ router.put("/",
         }
     }
 );
+
+function updateObject(objToUpdate, objWithUpdates) {
+    for (prop in objToUpdate) {
+        if (objWithUpdates[prop] !== undefined) {
+            objToUpdate[prop] = objWithUpdates[prop];
+        }
+    }
+}
 
 router.use("/", (err, req, res, next) => {
     res.status(err.httpErrorCode).send(err.errorJSON);
@@ -449,19 +429,6 @@ function getIndexOfBottleByID(id) {
         bottle => bottle.id === id
     );
 }
-
-// function sendBottleIDNotFoundError(id, res) {
-//     res.json(
-//         {
-//             error: `No bottle with the ID '${id}'.`
-//         }
-//     );
-// }
-
-// function sendUnprocessableEntityError(res, errorsJSON) {
-//     res.status(httpStatusCodes.UNPROCESSABLE_ENTITY)
-//         .json(errorsJSON);//{ errors: errors.mapped() }); TODO for query
-// }
 
 // param: linkDataToAdd - A list of lists, 
 // where each inner list has the format: [rel, href].

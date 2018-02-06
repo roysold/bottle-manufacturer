@@ -1,5 +1,5 @@
 // Example PropertyError:
-// {s
+// {
 //     location: body[2],
 //     value: "%%%",
 //     msg: "Must be a number"
