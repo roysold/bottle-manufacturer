@@ -1,11 +1,11 @@
-const { isAlphanumericString, isValidDateFormat } = require("../validation/validations.js");
+const { isAlphanumericString, isValidDateFormat, isNumericString } = require("../validation/validations.js");
 
 const areAllTrue = values => values.every(value => value === true);
 
 const propertiesValidations = {
     "id": {
-        isValid: (id) => areAllTrue([isAlphanumericString(id)]),
-        errorMsg: "Must be an alphanumeric string without whitespace. Must not be empty."
+        isValid: (id) => areAllTrue([isNumericString(id)]),
+        errorMsg: "Must be an numeric string without whitespace. Must not be empty."
     },
     "creationDate": {
         isValid: (creationDate) => areAllTrue([isValidDateFormat(creationDate)]),

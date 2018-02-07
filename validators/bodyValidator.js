@@ -1,15 +1,15 @@
 const PropertyError = require("../validation/PropertyError.js");
 
-module.exports = class bodyValidator {
+module.exports = class BodyValidator {
     constructor(properties, validations) {
         this.propertiesToValidate = properties;
         this.validations = validations;
     }
 
-    validateQuery(bottle, index = -1) {
+    validateBody(bottle, index = -1) {
         let errors = {};
 
-        for (property of this.propertiesToValidate) {
+        for (let property of this.propertiesToValidate) {
             const propertyValidation = this.validations[property];
             const propertyValue = bottle[property];
 
