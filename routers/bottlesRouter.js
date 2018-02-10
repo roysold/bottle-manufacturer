@@ -4,9 +4,7 @@ let bodyParser = require("body-parser");
 let { body, query, validationResult } = require('express-validator/check');
 let bottles = require("../data/bottles.json");
 let ConnectSequence = require('connect-sequence');
-let ConflictError = require("../errorTypes/ConflictError.js");
 let UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
-const IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
 let BadQueryError = require("../errorTypes/BadQueryError.js");
 const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
 const { addLinksPropertyToList, addLinksPropertyToObject } = require("../filters/listFilters.js");
@@ -14,6 +12,8 @@ const GETEntities = require("../GET_middleware/GETEntities.js");
 const addEntities = require("../POST_middleware/addEntities.js")
 const concatURLs = require("../concatURLs/concatURLs.js");
 const { updateEntities } = require("../PUT_middleware/updateEntities.js");
+const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
+
 /* Query Validation */
 const queryValidator = require("../validators/queryValidator.js");
 const filteringQueryValidations = require("../queryValidationData/filteringQueryValidation.js");
@@ -29,7 +29,9 @@ bottles = addLinksPropertyToList(
         [
             ["self", concatURLs("/api/v1/bottles", bottle.id)]
         ]
-)
+);
+
+const IDPropertyName = "id";
 
 const IDGenerator = generateNextNumericID("9");
 
@@ -40,7 +42,8 @@ router.use("/",
         }
 
         next();
-    });
+    }
+);
 
 function bodyValidations(req, res, next) {
     let validateBottles = validateBottlesFunction[req.method];
@@ -77,6 +80,7 @@ function appendErrorIfNotEmpty(res, errorObj) {
     }
 }
 
+//TODO maybe call these functions from withih declared middleware in the route?
 const validateBottlesFunction = {
     POST: (req, res) => {
         // In POST, bottles in body must have all properties except for ID.
@@ -89,7 +93,7 @@ const validateBottlesFunction = {
                 let bottleError = bodyValidator.validateBody(bottle, index);
                 appendErrorIfNotEmpty(res, bottleError);
             }
-        )
+        );
     },
     PUT: (req, res, next) => {
         // In PUT, bottles in body don't require all properties, except ID.
@@ -103,48 +107,8 @@ const validateBottlesFunction = {
 
                 appendErrorIfNotEmpty(res, bottleError);
             }
-        )
-
-        if (res.locals.errors.length !== 0) {
-            next();
-        } else {
-            let nonExistentIDEntityIndex = req.body.findIndex(object =>
-                !bottles
-                    .map(bottle => bottle["id"])
-                    .includes(object["id"])
-            );
-
-            if (nonExistentIDEntityIndex !== -1) {
-                next(new IDNotFoundError(req.body[nonExistentIDEntityIndex]["id"]));
-            } else {
-                const conflictingID = findConflictingIDInList(req.body, "id");
-
-                if (conflictingID !== "") {
-                    next(new ConflictError(conflictingID));
-                }
-            }
-        }
+        );
     }
-}
-
-function findConflictingIDInList(list, IDPropertyName) {
-    let IDs = new Map();
-    let hasIDConflict = false;
-    let conflictingID = "";
-
-    // Check for ID conflicts.
-    for (let index = 0;
-        !hasIDConflict && (index < list.length);
-        index++) {
-        if (IDs.has(list[index][IDPropertyName])) {
-            hasIDConflict = true;
-            conflictingID = list[index][IDPropertyName];
-        } else {
-            IDs.set(list[index][IDPropertyName], 0);
-        }
-    }
-
-    return conflictingID;
 }
 
 const entityProperties = ["id", "creationDate", "orderID", "factoryID"];
@@ -194,7 +158,7 @@ router.param("id", (req, res, next) => {
         getIndexByID(bottles, req.params.id);
 
     res.locals.indexOfBottleByID === -1 ?
-        sendBottleIDNotFoundError(req, res)
+        next(new IDNotFoundError(req.params.id, "params"))
         : next();
 });
 
@@ -213,7 +177,8 @@ function setValidations(arrayValidations, objectValidations) {
     return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
 }
 
-router.post("/", bodyValidations,
+router.post("/",
+    bodyValidations,
     (req, res, next) => {
         if (res.locals.errors.length) {
             next(new UnprocessableEntityError(res.locals.errors));
@@ -241,12 +206,15 @@ router.post("/", bodyValidations,
     }
 );
 
-router.put("/", bodyValidations,
+router.put("/",
+    bodyValidations,
+    checkForNonExistentID(bottles, IDPropertyName),
+    checkForIDConflicts(IDPropertyName),
     (req, res, next) => {
-        if (res.locals.errors.length) {
+        if (res.locals.errors.length !== 0)  {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            updateEntities(bottles, req.body, "id", entityProperties);
+            updateEntities(bottles, req.body, entityProperties, "id");
             res.send()
         }
     }
