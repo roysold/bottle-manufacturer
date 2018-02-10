@@ -1,17 +1,17 @@
 const PropertyError = require("../validation/PropertyError.js");
 
-module.exports = class BodyValidator {
+module.exports = class ObjectValidator {
     constructor(properties, validations) {
         this.propertiesToValidate = properties;
         this.validations = validations;
     }
 
-    validateBody(bottle, index = -1) {
+    validateObject(object, index = -1) {
         let errors = {};
 
         for (let property of this.propertiesToValidate) {
             const propertyValidation = this.validations[property];
-            const propertyValue = bottle[property];
+            const propertyValue = object[property];
 
             if (!propertyValidation.isValid(propertyValue)) {
                 errors[property] =

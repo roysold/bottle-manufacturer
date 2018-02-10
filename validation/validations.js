@@ -6,8 +6,7 @@ function isString(value) {
 
 module.exports = {
     isAlphanumericString: value =>
-        isString(value) &&
-        validator.isAlphanumeric(value),
+        isString(value) && validator.isAlphanumeric(value),
 
     isValidDateFormat: value =>
         !isNaN(new Date(value).getTime()),
@@ -16,7 +15,7 @@ module.exports = {
         list.includes(value),
 
     isNumericString: value =>
-        validator.isNumeric(value),
+        isString(value) && validator.isNumeric(value),
 
     isInSortFormat: (value, list) => {
         let field = value.replace(/^(\+|-)/, "");

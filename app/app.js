@@ -26,4 +26,14 @@ app.use((err, req, res, next) => {
 
 app.use("/api/v1/bottles", bottlesRouter);
 
+app.use("/", (err, req, res, next) => {
+    console.log(`error: ${err.message}`); //TODO proper logs
+    res.status(err.httpErrorCode).send(err.errorJSON);
+});
+
+
+app.use((req, res, next) => {
+    res.status(httpStatusCodes.NOT_FOUND).send("This is not a route.");
+});
+
 app.listen(3000);

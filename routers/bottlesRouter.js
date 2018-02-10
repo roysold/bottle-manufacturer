@@ -1,26 +1,32 @@
-let express = require('express');
+const express = require('express');
 const httpStatusCodes = require("http-status-codes");
-let bodyParser = require("body-parser");
-let { body, query, validationResult } = require('express-validator/check');
-let bottles = require("../data/bottles.json");
-let ConnectSequence = require('connect-sequence');
-let UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
-let BadQueryError = require("../errorTypes/BadQueryError.js");
+const bodyParser = require("body-parser");
+const UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
+const BadQueryError = require("../errorTypes/BadQueryError.js");
+const IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
 const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
-const { addLinksPropertyToList, addLinksPropertyToObject } = require("../filters/listFilters.js");
+const { addLinksPropertyToList } = require("../filters/listFilters.js");
 const GETEntities = require("../GET_middleware/GETEntities.js");
 const addEntities = require("../POST_middleware/addEntities.js")
 const concatURLs = require("../concatURLs/concatURLs.js");
 const { updateEntities } = require("../PUT_middleware/updateEntities.js");
 const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
-
+const appendObjectIfObjectNotEmpty = require("../appendObjectIfObjectNotEmpty/appendObjectIfObjectNotEmpty.js");
+const { setIndexOfObjectByID, deleteFromCollectionByID } = require("../IDParamMiddleware/IDParamMiddleware.js");
 /* Query Validation */
 const queryValidator = require("../validators/queryValidator.js");
 const filteringQueryValidations = require("../queryValidationData/filteringQueryValidation.js");
 
 /* Body Validation */
-const BodyValidator = require("../validators/bodyValidator.js");
+const ObjectValidator = require("../validators/objectValidator.js");
 const bottleBodyValidations = require("../bodyValidationData/bottleBodyValidation");
+const POSTBodyValidator = require("../validators/POST_bodyValidator.js");
+const PUTBodyValidator = require("../validators/PUT_bodyValidator.js");
+
+/* Entity Properties */
+const { entityProperties, IDPropertyName } = require("../entityProperties/bottleProperties.js");
+
+let bottles = require("../data/bottles.json");
 
 let router = express.Router();
 
@@ -31,87 +37,35 @@ bottles = addLinksPropertyToList(
         ]
 );
 
-const IDPropertyName = "id";
-
 const IDGenerator = generateNextNumericID("9");
 
-router.use("/",
-    (req, res, next) => {
-        if (!Array.isArray(req.body)) {
-            req.body = [req.body]
-        }
-
-        next();
+function convertBodyToArray(req, res, next) {
+    if (!Array.isArray(req.body)) {
+        req.body = [req.body]
     }
-);
-
-function bodyValidations(req, res, next) {
-    let validateBottles = validateBottlesFunction[req.method];
-
-    validateBottles(req, res, next);
-
-    // Filter out empty error objects.
-    res.locals.errors = res.locals.errors.filter(
-        error => Object.keys(error).length
-    );
 
     next();
 }
 
-const propertiesToValidate = {
-    POST: () => {
-        let properties = entityProperties.slice();
-        properties.splice(properties.indexOf("id"), 1);
+function bodyValidations(req, res, next) {
+    const collectionValidatorType = collectionValidatorTypes[req.method];
 
-        return properties;
-    },
-    PUT: (bottle) => {
-        let properties = Object.keys(bottle).filter(
-            property => entityProperties.includes(property)
-        );
+    const collectionValidator = new collectionValidatorType(
+        req.body,
+        bottleBodyValidations,
+        entityProperties,
+        IDPropertyName
+    );
 
-        return ["id"].concat(properties);
-    }
+    res.locals.errors = collectionValidator.validateCollection();
+
+    next();
 }
 
-function appendErrorIfNotEmpty(res, errorObj) {
-    if (Object.keys(errorObj).length) {
-        res.locals.errors.push(errorObj);
-    }
+const collectionValidatorTypes = {
+    POST: POSTBodyValidator,
+    PUT: PUTBodyValidator
 }
-
-//TODO maybe call these functions from withih declared middleware in the route?
-const validateBottlesFunction = {
-    POST: (req, res) => {
-        // In POST, bottles in body must have all properties except for ID.
-        res.locals.errors = [];
-        let properties = propertiesToValidate.POST();
-        let bodyValidator = new BodyValidator(properties, bottleBodyValidations);
-
-        req.body.forEach(
-            (bottle, index) => {
-                let bottleError = bodyValidator.validateBody(bottle, index);
-                appendErrorIfNotEmpty(res, bottleError);
-            }
-        );
-    },
-    PUT: (req, res, next) => {
-        // In PUT, bottles in body don't require all properties, except ID.
-        res.locals.errors = [];
-
-        req.body.forEach(
-            (bottle, index) => {
-                let properties = propertiesToValidate.PUT(bottle);
-                let bodyValidator = new BodyValidator(properties, bottleBodyValidations);
-                let bottleError = bodyValidator.validateBody(bottle, index);
-
-                appendErrorIfNotEmpty(res, bottleError);
-            }
-        );
-    }
-}
-
-const entityProperties = ["id", "creationDate", "orderID", "factoryID"];
 
 const filteringQueryValidator =
     new queryValidator(
@@ -124,7 +78,7 @@ function queryValidations(req, res, next) {
     res.locals.errors = [];
     const queryError = filteringQueryValidator.validateQuery(req.query);
 
-    appendErrorIfNotEmpty(res, queryError);
+    appendObjectIfObjectNotEmpty(res.locals.errors, queryError);
 
     next()
 }
@@ -153,31 +107,35 @@ router.get("/",
     }
 );
 
-router.param("id", (req, res, next) => {
-    res.locals.indexOfBottleByID =
-        getIndexByID(bottles, req.params.id);
+router.param("id",
+    setIndexOfObjectByID(bottles),
+    (req, res, next) => {
+        res.locals.indexOfObjectByID === -1 ?
+            next(new IDNotFoundError(req.params.id, "params"))
+            : next();
+    });
 
-    res.locals.indexOfBottleByID === -1 ?
-        next(new IDNotFoundError(req.params.id, "params"))
-        : next();
-});
+//TODO cclean package json
 
 router.get("/:id", (req, res) => {
-    res.json(bottles[res.locals.indexOfBottleByID]);
+    res.json(bottles[res.locals.indexOfObjectByID]);
 });
 
 router.delete("/:id", (req, res) => {
-    bottles.splice(res.locals.indexOfBottleByID, 1);
+    deleteFromCollectionByID(bottles);
 
     res.status(httpStatusCodes.ACCEPTED)
         .send("Bottle deleted.");
 });
+
+// Put all these little things into functions
 
 function setValidations(arrayValidations, objectValidations) {
     return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
 }
 
 router.post("/",
+    convertBodyToArray,
     bodyValidations,
     (req, res, next) => {
         if (res.locals.errors.length) {
@@ -207,11 +165,12 @@ router.post("/",
 );
 
 router.put("/",
+    convertBodyToArray,
     bodyValidations,
     checkForNonExistentID(bottles, IDPropertyName),
     checkForIDConflicts(IDPropertyName),
     (req, res, next) => {
-        if (res.locals.errors.length !== 0)  {
+        if (res.locals.errors.length !== 0) {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
             updateEntities(bottles, req.body, entityProperties, "id");
@@ -220,16 +179,5 @@ router.put("/",
     }
 );
 
-router.use("/", (err, req, res, next) => {
-    console.log(`error: ${err.message}`); //TODO proper logs
-    res.status(err.httpErrorCode).send(err.errorJSON);
-});
-
-
-function getIndexByID(list, id) {
-    return list.findIndex(
-        item => item.id === id
-    );
-}
 
 module.exports.router = router;
