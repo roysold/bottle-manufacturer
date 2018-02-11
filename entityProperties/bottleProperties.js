@@ -1,4 +1,5 @@
 module.exports = {
     entityProperties: ["id", "creationDate", "orderID", "factoryID"],
-    IDPropertyName: "id"
+    IDPropertyName: "id",
+    dateProperties: ["creationDate"]
 };

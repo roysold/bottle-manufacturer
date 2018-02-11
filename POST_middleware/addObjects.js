@@ -2,15 +2,15 @@ const { addLinksPropertyToList } = require("../filters/listFilters.js");
 
 // TODO insertEntities?
  //TODO addobjects or entities
-module.exports = function addEntities(
-    entities,
-    entitiesToAdd,
+module.exports = function addObjects(
+    objects,
+    objectsToAdd,
     entityProperties,
     IDPropertyName,
     IDGenerator,
     generateLinks
 ) {
-    let cleanEntitiesToAdd = entitiesToAdd.map(
+    let cleanEntitiesToAdd = objectsToAdd.map(
         (entity, index) =>
             getObjectWithID(
                 entity,
@@ -24,7 +24,7 @@ module.exports = function addEntities(
         cleanEntitiesToAdd, generateLinks
     );
 
-    return entities.concat(entitiesWithLinks);
+    return objects.concat(entitiesWithLinks);
 }
 
 function getObjectWithID(object, properties, IDPropertyName, IDGenerator) {

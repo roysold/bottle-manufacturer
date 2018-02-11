@@ -7,7 +7,7 @@ const IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
 const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
 const { addLinksPropertyToList } = require("../filters/listFilters.js");
 const GETEntities = require("../GET_middleware/GETEntities.js");
-const addEntities = require("../POST_middleware/addEntities.js")
+const addObjects = require("../POST_middleware/addObjects.js");
 const concatURLs = require("../concatURLs/concatURLs.js");
 const { updateEntities } = require("../PUT_middleware/updateEntities.js");
 const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
@@ -24,7 +24,7 @@ const POSTBodyValidator = require("../validators/POST_bodyValidator.js");
 const PUTBodyValidator = require("../validators/PUT_bodyValidator.js");
 
 /* Entity Properties */
-const { entityProperties, IDPropertyName } = require("../entityProperties/bottleProperties.js");
+const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
 
 let bottles = require("../data/bottles.json");
 
@@ -83,12 +83,10 @@ function queryValidations(req, res, next) {
     next()
 }
 
-//TODO order the objects in post...
-
-// example route: /api/v1/bottles?sort=-id,creationDate,\+factoryID&fields=id,orderID,factoryID&offset=-2&limit=1
-// Route sorts by descending id, ascending creationDate
-// and factoryID, displays id, orderID
-// and factoryID fields and gets only the second last object.
+// example route: /api/v1/bottles?sort=-id,creationDate,%2BfactoryID&fields=id,orderID,factoryID&offset=-2&limit=1
+// Route sorts by descending id, ascending creationDate and factoryID.
+// Displays id, orderID and factoryID fields.
+// Gets only the second last object.
 router.get("/",
     queryValidations,
     (req, res, next) => {
@@ -98,7 +96,7 @@ router.get("/",
         } else {
             let bottlesToSend = GETEntities(
                 bottles,
-                ["creationDate"],
+                dateProperties,
                 req.query
             );
 
@@ -115,8 +113,6 @@ router.param("id",
             : next();
     });
 
-//TODO cclean package json
-
 router.get("/:id", (req, res) => {
     res.json(bottles[res.locals.indexOfObjectByID]);
 });
@@ -127,8 +123,6 @@ router.delete("/:id", (req, res) => {
     res.status(httpStatusCodes.ACCEPTED)
         .send("Bottle deleted.");
 });
-
-// Put all these little things into functions
 
 function setValidations(arrayValidations, objectValidations) {
     return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
@@ -141,22 +135,13 @@ router.post("/",
         if (res.locals.errors.length) {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            bottles = addEntities(
+            bottles = addObjects(
                 bottles,
                 req.body,
                 entityProperties,
-                "id",
+                IDPropertyName,
                 IDGenerator,
-                entity =>
-                    [
-                        [
-                            "self",
-                            concatURLs(
-                                req.originalUrl,
-                                entity.id
-                            )
-                        ]
-                    ]
+                entity => [["self", concatURLs(req.originalUrl, entity.id)]]
             );
 
             res.status(httpStatusCodes.CREATED).send();
@@ -173,7 +158,7 @@ router.put("/",
         if (res.locals.errors.length !== 0) {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            updateEntities(bottles, req.body, entityProperties, "id");
+            updateEntities(bottles, req.body, entityProperties, IDPropertyName);
             res.send()
         }
     }
