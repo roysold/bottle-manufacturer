@@ -1,23 +1,33 @@
 const express = require('express');
 const httpStatusCodes = require("http-status-codes");
 const bodyParser = require("body-parser");
+
+/* Error types */
 const UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
 const BadQueryError = require("../errorTypes/BadQueryError.js");
 const IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
-const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
-const { addLinksPropertyToList } = require("../filters/listFilters.js");
+
+/* GET bottles */
 const GETEntities = require("../GET_middleware/GETEntities.js");
+
+/* POST bottles */
 const addObjects = require("../POST_middleware/addObjects.js");
-const concatURLs = require("../concatURLs/concatURLs.js");
+const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
+
+/* PUT bottles */
 const { updateEntities } = require("../PUT_middleware/updateEntities.js");
 const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
+
+/* ID Validation */
 const appendObjectIfObjectNotEmpty = require("../appendObjectIfObjectNotEmpty/appendObjectIfObjectNotEmpty.js");
 const { getIndexByID, deleteFromCollectionByID } = require("../IDParamMiddleware/IDParamMiddleware.js");
+
 /* Query Validation */
 const queryValidator = require("../validators/queryValidator.js");
 const filteringQueryValidations = require("../queryValidationData/filteringQueryValidation.js");
 
 /* Body Validation */
+const convertBodyToArray = require("../convertBodyToArrayMiddleware/convertBodyToArray.js");
 const ObjectValidator = require("../validators/objectValidator.js");
 const bottleBodyValidations = require("../bodyValidationData/bottleBodyValidation");
 const POSTBodyValidator = require("../validators/POST_bodyValidator.js");
@@ -26,9 +36,12 @@ const PUTBodyValidator = require("../validators/PUT_bodyValidator.js");
 /* Entity Properties */
 const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
 
+/* Data */
 let collection = require("../data/bottles.json");
+const { addLinksPropertyToList } = require("../filters/listFilters.js");
+const concatURLs = require("../concatURLs/concatURLs.js");
 
-let router = express.Router();
+const router = express.Router();
 
 collection = addLinksPropertyToList(
     collection, bottle =>
@@ -36,36 +49,6 @@ collection = addLinksPropertyToList(
             ["self", concatURLs("/api/v1/bottles", bottle.id)]
         ]
 );
-
-const IDGenerator = generateNextNumericID("9");
-
-function convertBodyToArray(req, res, next) {
-    if (!Array.isArray(req.body)) {
-        req.body = [req.body]
-    }
-
-    next();
-}
-
-function bodyValidations(req, res, next) {
-    const collectionValidatorType = collectionValidatorTypes[req.method];
-
-    const collectionValidator = new collectionValidatorType(
-        req.body,
-        bottleBodyValidations,
-        entityProperties,
-        IDPropertyName
-    );
-
-    res.locals.errors = collectionValidator.validateCollection();
-
-    next();
-}
-
-const collectionValidatorTypes = {
-    POST: POSTBodyValidator,
-    PUT: PUTBodyValidator
-}
 
 const filteringQueryValidator =
     new queryValidator(
@@ -90,7 +73,6 @@ function queryValidations(req, res, next) {
 router.get("/",
     queryValidations,
     (req, res, next) => {
-
         if (res.locals.errors.length) {
             next(new BadQueryError(res.locals.errors));
         } else {
@@ -112,7 +94,8 @@ router.param("id",
         res.locals.indexOfObjectByID === -1 ?
             next(new IDNotFoundError(req.params.id, "params"))
             : next();
-    });
+    }
+);
 
 router.get("/:id", (req, res) => {
     res.json(collection[res.locals.indexOfObjectByID]);
@@ -125,9 +108,27 @@ router.delete("/:id", (req, res) => {
         .send("Bottle deleted.");
 });
 
-function setValidations(arrayValidations, objectValidations) {
-    return (req, res) => req.body instanceof Array ? arrayValidations : objectValidations;
+function bodyValidations(req, res, next) {
+    const collectionValidatorType = collectionValidatorTypes[req.method];
+
+    const collectionValidator = new collectionValidatorType(
+        req.body,
+        bottleBodyValidations,
+        entityProperties,
+        IDPropertyName
+    );
+
+    res.locals.errors = collectionValidator.validateCollection();
+
+    next();
 }
+
+const collectionValidatorTypes = {
+    POST: POSTBodyValidator,
+    PUT: PUTBodyValidator
+}
+
+const IDGenerator = generateNextNumericID("9");
 
 router.post("/",
     convertBodyToArray,
