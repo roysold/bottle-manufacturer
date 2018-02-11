@@ -12,7 +12,7 @@ const concatURLs = require("../concatURLs/concatURLs.js");
 const { updateEntities } = require("../PUT_middleware/updateEntities.js");
 const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
 const appendObjectIfObjectNotEmpty = require("../appendObjectIfObjectNotEmpty/appendObjectIfObjectNotEmpty.js");
-const { setIndexOfObjectByID, deleteFromCollectionByID } = require("../IDParamMiddleware/IDParamMiddleware.js");
+const { getIndexByID, deleteFromCollectionByID } = require("../IDParamMiddleware/IDParamMiddleware.js");
 /* Query Validation */
 const queryValidator = require("../validators/queryValidator.js");
 const filteringQueryValidations = require("../queryValidationData/filteringQueryValidation.js");
@@ -26,12 +26,12 @@ const PUTBodyValidator = require("../validators/PUT_bodyValidator.js");
 /* Entity Properties */
 const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
 
-let bottles = require("../data/bottles.json");
+let collection = require("../data/bottles.json");
 
 let router = express.Router();
 
-bottles = addLinksPropertyToList(
-    bottles, bottle =>
+collection = addLinksPropertyToList(
+    collection, bottle =>
         [
             ["self", concatURLs("/api/v1/bottles", bottle.id)]
         ]
@@ -95,7 +95,7 @@ router.get("/",
             next(new BadQueryError(res.locals.errors));
         } else {
             let bottlesToSend = GETEntities(
-                bottles,
+                collection,
                 dateProperties,
                 req.query
             );
@@ -106,19 +106,20 @@ router.get("/",
 );
 
 router.param("id",
-    setIndexOfObjectByID(bottles),
     (req, res, next) => {
+        res.locals.indexOfObjectByID = getIndexByID(collection, req.params.id);
+
         res.locals.indexOfObjectByID === -1 ?
             next(new IDNotFoundError(req.params.id, "params"))
             : next();
     });
 
 router.get("/:id", (req, res) => {
-    res.json(bottles[res.locals.indexOfObjectByID]);
+    res.json(collection[res.locals.indexOfObjectByID]);
 });
 
 router.delete("/:id", (req, res) => {
-    deleteFromCollectionByID(bottles);
+    deleteFromCollectionByID(collection, res.locals.indexOfObjectByID);
 
     res.status(httpStatusCodes.ACCEPTED)
         .send("Bottle deleted.");
@@ -135,13 +136,13 @@ router.post("/",
         if (res.locals.errors.length) {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            bottles = addObjects(
-                bottles,
+            collection = addObjects(
+                collection,
                 req.body,
                 entityProperties,
                 IDPropertyName,
                 IDGenerator,
-                entity => [["self", concatURLs(req.originalUrl, entity.id)]]
+                object => [["self", concatURLs(req.originalUrl, object.id)]]
             );
 
             res.status(httpStatusCodes.CREATED).send();
@@ -152,13 +153,13 @@ router.post("/",
 router.put("/",
     convertBodyToArray,
     bodyValidations,
-    checkForNonExistentID(bottles, IDPropertyName),
+    checkForNonExistentID(collection, IDPropertyName),
     checkForIDConflicts(IDPropertyName),
     (req, res, next) => {
         if (res.locals.errors.length !== 0) {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            updateEntities(bottles, req.body, entityProperties, IDPropertyName);
+            updateEntities(collection, req.body, entityProperties, IDPropertyName);
             res.send()
         }
     }
