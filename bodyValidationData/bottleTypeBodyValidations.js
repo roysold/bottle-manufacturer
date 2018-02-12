@@ -1,4 +1,9 @@
-const { isAlphanumericString, isValidDateFormat, isNumericString, isSizeFormatString } = require("../validation/validations.js");
+const { 
+    isAlphanumericString,
+    isValidDateFormat,
+    isNumericString,
+    isSizeFormatString
+} = require("../validation/validations.js");
 
 const areAllTrue = values => values.every(value => value === true);
 

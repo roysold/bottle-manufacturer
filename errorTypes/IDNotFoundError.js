@@ -1,8 +1,8 @@
 const httpStatusCodes = require("http-status-codes");
 
-module.exports = class IDNotFoundError extends Error {
+module.exports = class IDNotFoundError {
     constructor(id, location) {
-        super("No bottle with this ID.");
+        this.message = "No bottle with this ID.";
         this.id = id;
         this.location = location;
     }

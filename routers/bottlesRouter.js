@@ -1,37 +1,31 @@
 const express = require('express');
 const httpStatusCodes = require("http-status-codes");
-const bodyParser = require("body-parser");
 
 /* Error types */
-const UnprocessableEntityError = require("../errorTypes/UnprocessableEntityError.js");
-const BadQueryError = require("../errorTypes/BadQueryError.js");
-const IDNotFoundError = require("../errorTypes/IDNotFoundError.js");
+const { UnprocessableEntityError, BadQueryError, IDNotFoundError } = require("../errorTypes/index.js");
 
-/* GET bottles */
-const GETEntities = require("../GET_middleware/GETEntities.js");
+/* CRUD Functions*/
+const { getObjects, addObjects, updateObjects, deleteByIndex } = require("../CRUD/index.js");
 
 /* POST bottles */
-const addObjects = require("../POST_middleware/addObjects.js");
 const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
 
-/* PUT bottles */
-const { updateEntities } = require("../PUT_middleware/updateEntities.js");
+/* PUT ID Validation */
 const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
 
 /* ID Validation */
-const appendObjectIfObjectNotEmpty = require("../appendObjectIfObjectNotEmpty/appendObjectIfObjectNotEmpty.js");
-const { getIndexByID, deleteFromCollectionByID } = require("../IDParamMiddleware/IDParamMiddleware.js");
+const appendObjectToList = require("../appendObjectIfObjectNotEmpty/appendObjectToList.js");
+const getIndexByID = require("../IDParamMiddleware/getIndexByID.js");
 
 /* Query Validation */
-const queryValidator = require("../validators/queryValidator.js");
-const filteringQueryValidations = require("../queryValidationData/filteringQueryValidation.js");
+const { filteringQueryValidations } = require("../queryValidationData/index.js");
 
 /* Body Validation */
 const convertBodyToArray = require("../convertBodyToArrayMiddleware/convertBodyToArray.js");
-const ObjectValidator = require("../validators/objectValidator.js");
-const bottleBodyValidations = require("../bodyValidationData/bottleBodyValidation");
-const POSTBodyValidator = require("../validators/POST_bodyValidator.js");
-const PUTBodyValidator = require("../validators/PUT_bodyValidator.js");
+const { bottleBodyValidations } = require("../bodyValidationData/index.js");
+
+/* Validators */
+const { POSTBodyValidator, PUTBodyValidator, QueryValidator } = require("../validators/index.js");
 
 /* Entity Properties */
 const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
@@ -51,7 +45,7 @@ collection = addLinksPropertyToList(
 );
 
 const filteringQueryValidator =
-    new queryValidator(
+    new QueryValidator(
         filteringQueryValidations(
             entityProperties
         )
@@ -61,7 +55,11 @@ function queryValidations(req, res, next) {
     res.locals.errors = [];
     const queryError = filteringQueryValidator.validateQuery(req.query);
 
-    appendObjectIfObjectNotEmpty(res.locals.errors, queryError);
+    try {
+        appendObjectToList(res.locals.errors, queryError);
+    } catch (error) {
+        console.log(error);
+    }
 
     next()
 }
@@ -76,7 +74,7 @@ router.get("/",
         if (res.locals.errors.length) {
             next(new BadQueryError(res.locals.errors));
         } else {
-            let objectsToSend = GETEntities(
+            let objectsToSend = getObjects(
                 collection,
                 dateProperties,
                 req.query
@@ -89,7 +87,7 @@ router.get("/",
 
 router.param("id",
     (req, res, next) => {
-        res.locals.indexOfObjectByID = getIndexByID(collection, req.params[IDPropertyName]);
+        res.locals.indexOfObjectByID = getIndexByID(collection, IDPropertyName, req.params[IDPropertyName]);
 
         res.locals.indexOfObjectByID === -1 ?
             next(new IDNotFoundError(req.params[IDPropertyName], "params"))
@@ -102,7 +100,7 @@ router.get("/:id", (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-    deleteFromCollectionByID(collection, res.locals.indexOfObjectByID);
+    deleteFromCollectionByIndex(collection, res.locals.indexOfObjectByID);
 
     res.status(httpStatusCodes.ACCEPTED)
         .send("Bottle deleted.");
@@ -167,4 +165,4 @@ router.put("/",
 );
 
 
-module.exports.router = router;
+module.exports = router;

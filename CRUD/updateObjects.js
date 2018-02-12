@@ -1,10 +1,10 @@
-function updateEntities(listToUpdate, listWithUpdates, properties, IDPropertyName) {
-    listWithUpdates.forEach(entityFromBody => {
+module.exports = function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
+    listWithUpdates.forEach(objectFromBody => {
         const entityToModify = listToUpdate.find(
-            entity => entity[IDPropertyName] === entityFromBody[IDPropertyName]
+            entity => entity[IDPropertyName] === objectFromBody[IDPropertyName]
         )
 
-        updateObject(entityToModify, entityFromBody, properties);
+        updateObject(entityToModify, objectFromBody, properties);
     });
 }
 
@@ -16,8 +16,4 @@ function updateObject(objToUpdate, objWithUpdates, properties) {
             objToUpdate[property] = objWithUpdates[property];
         }
     })
-}
-
-module.exports = {
-    updateEntities: updateEntities
 }

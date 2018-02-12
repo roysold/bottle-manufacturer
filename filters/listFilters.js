@@ -36,25 +36,13 @@ function getCompareItemByFieldFunction(field, isDate, ascending) {
         return (item1, item2) => {
             let { value1, value2 } = getComparableValues(item1[field], item2[field], isDate);
 
-            if (value1 < value2) {
-                return 1;
-            } else if (value1 > value2) {
-                return -1;
-            } else {
-                return 0;
-            }
+        return value2 - value1;
         }
     } else {
         return (item1, item2) => {
             let { value1, value2 } = getComparableValues(item1[field], item2[field], isDate);
 
-            if (value1 > value2) {
-                return 1;
-            } else if (value1 < value2) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return value1 - value2;
         }
     }
 }

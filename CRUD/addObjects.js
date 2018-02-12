@@ -10,7 +10,7 @@ module.exports = function addObjects(
     IDGenerator,
     generateLinks
 ) {
-    let cleanEntitiesToAdd = objectsToAdd.map(
+    const cleanEntitiesToAdd = objectsToAdd.map(
         (entity, index) =>
             getObjectWithID(
                 entity,
@@ -20,7 +20,7 @@ module.exports = function addObjects(
             )
     );
 
-    let entitiesWithLinks = addLinksPropertyToList(
+    const entitiesWithLinks = addLinksPropertyToList(
         cleanEntitiesToAdd, generateLinks
     );
 

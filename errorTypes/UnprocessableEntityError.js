@@ -1,8 +1,7 @@
 const httpStatusCodes = require("http-status-codes");
 
-class UnprocessableEntityError extends Error {
+class UnprocessableEntityError {
     constructor(errors) {
-        super("");
         this.errors = errors;
     }
 

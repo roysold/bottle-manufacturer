@@ -1,7 +1,7 @@
-var express = require("express");
+const express = require("express");
 const httpStatusCodes = require("http-status-codes");
-let bodyParser = require("body-parser");
-var bottlesRouter = require("../routers/bottlesRouter.js").router;
+const bodyParser = require("body-parser");
+const bottlesRouter = require("../routers/bottlesRouter.js");
 // var bottleTypesRouter = require("../routers/bottleTypesRouter.js").router;
 
 let app = express();

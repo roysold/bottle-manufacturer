@@ -1,28 +1,28 @@
 const PropertyError = require("../validation/PropertyError.js");
 
 module.exports = class ObjectValidator {
-    constructor(properties, validations) {
+    constructor(properties, validationsObj) {
         this.propertiesToValidate = properties;
-        this.validations = validations;
+        this.validationsObj = validationsObj;
     }
 
     validateObject(object, index = -1) {
         let errors = {};
 
         for (let property of this.propertiesToValidate) {
-            const propertyValidation = this.validations[property];
+            const propertyValidationData = this.validationsObj[property];
             const propertyValue = object[property];
 
-            if (!propertyValidation.isValid(propertyValue)) {
+            if (!propertyValidationData.isValid(propertyValue)) {
                 errors[property] =
                     new PropertyError(
                         index === -1 ? "body" : `body[${index}]`,
                         propertyValue,
-                        propertyValidation.errorMsg
+                        propertyValidationData.errorMsg
                     );
             }
         }
 
-        return Object.keys(errors).length === 0 ? {} : { errors: errors };
+        return Object.keys(errors).length === 0 ? {} : { errors };
     }
 }

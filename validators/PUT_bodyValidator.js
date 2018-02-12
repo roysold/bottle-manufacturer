@@ -1,10 +1,10 @@
-const ObjectValidator = require("../validators/objectValidator.js");
-const appendObjectIfObjectNotEmpty = require("../appendObjectIfObjectNotEmpty/appendObjectIfObjectNotEmpty.js");
+const {ObjectValidator} = require("../validators/index.js");
+const appendObjectToList = require("../appendObjectToList/appendObjectToList.js");
 
 module.exports = class PUTBodyValidator {
-    constructor(collection, validations, entityProperties, IDPropertyName) {
+    constructor(collection, validationsObj, entityProperties, IDPropertyName) {
         this.collection = collection;
-        this.validations = validations;
+        this.validationsObj = validationsObj;
         this.entityProperties = entityProperties;
         this.IDPropertyName = IDPropertyName;
     }
@@ -16,7 +16,7 @@ module.exports = class PUTBodyValidator {
         this.collection.forEach(
             (object, index) => {
                 let properties = this.getPropertiesToValidate(object);
-                let objectValidator = new ObjectValidator(properties, this.validations);
+                let objectValidator = new ObjectValidator(properties, this.validationsObj);
                 let bottleError = objectValidator.validateObject(object, index);
 
                 appendObjectIfObjectNotEmpty(errors, bottleError);

@@ -1,23 +1,23 @@
 const PropertyError = require("../validation/PropertyError.js");
 
-module.exports = class queryValidator {
-    constructor(validations) {
-        this.validations = validations;
+module.exports = class QueryValidator {
+    constructor(validationsObj) {
+        this.validationsObj = validationsObj;
     }
 
     validateQuery(query) {
         let errors = {};
 
         for (let param in query) {
-            const paramValidation = this.validations[param];
+            const paramValidationData = this.validationsObj[param];
             const paramValue = query[param];
 
-            if (!paramValidation.isValid(paramValue)) {
+            if (!paramValidationData.isValid(paramValue)) {
                 errors[param] =
                     new PropertyError(
                         "query",
                         paramValue,
-                        paramValidation.errorMsg
+                        paramValidationData.errorMsg
                     );
             }
         }
