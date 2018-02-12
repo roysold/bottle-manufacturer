@@ -29,24 +29,24 @@ const filteringQueryValidations = require("../queryValidationData/filteringQuery
 /* Body Validation */
 const convertBodyToArray = require("../convertBodyToArrayMiddleware/convertBodyToArray.js");
 const ObjectValidator = require("../validators/objectValidator.js");
-const bottleBodyValidations = require("../bodyValidationData/bottleBodyValidation");
+const objectBodyValidations = require("../bodyValidationData/bottleTypeBodyValidation");
 const POSTBodyValidator = require("../validators/POST_bodyValidator.js");
 const PUTBodyValidator = require("../validators/PUT_bodyValidator.js");
 
 /* Entity Properties */
-const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
+const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleTypeProperties.js");
 
 /* Data */
-let collection = require("../data/bottles.json");
+let collection = require("../data/bottleTypes.json");
 const { addLinksPropertyToList } = require("../filters/listFilters.js");
 const concatURLs = require("../concatURLs/concatURLs.js");
 
 const router = express.Router();
 
 collection = addLinksPropertyToList(
-    collection, bottle =>
+    collection, bottleType =>
         [
-            ["self", concatURLs("/api/v1/bottles", bottle[IDPropertyName])]
+            ["self", concatURLs("/api/v1/bottles", bottleType[IDPropertyName])]
         ]
 );
 
@@ -113,7 +113,7 @@ function bodyValidations(req, res, next) {
 
     const collectionValidator = new collectionValidatorType(
         req.body,
-        bottleBodyValidations,
+        objectBodyValidations,
         entityProperties,
         IDPropertyName
     );

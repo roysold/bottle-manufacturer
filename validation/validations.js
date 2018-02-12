@@ -21,5 +21,13 @@ module.exports = {
         let field = value.replace(/^(\+|-)/, "");
 
         return list.includes(field);
-    }
+    },
+
+    isSizeFormatString: value =>
+        isString(value) &&
+        validator.isFloat(stringWithoutLastChar(value)) &&
+        lastCharOfString(value)
 }
+
+const stringWithoutLastChar = str => str.slice(0, -1);
+const lastCharOfString = str => str.substr(-1);

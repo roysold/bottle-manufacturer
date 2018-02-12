@@ -1,7 +1,8 @@
 var express = require("express");
-var bottlesRouter = require("../routers/bottlesRouter.js").router;
 const httpStatusCodes = require("http-status-codes");
 let bodyParser = require("body-parser");
+var bottlesRouter = require("../routers/bottlesRouter.js").router;
+// var bottleTypesRouter = require("../routers/bottleTypesRouter.js").router;
 
 let app = express();
 
@@ -25,9 +26,9 @@ app.use((err, req, res, next) => {
 });
 
 app.use("/api/v1/bottles", bottlesRouter);
+// app.use("/api/v1/bottletypes", bottleTypesRouter);
 
 app.use("/", (err, req, res, next) => {
-    console.log(`error: ${err.message}`); //TODO proper logs
     res.status(err.httpErrorCode).send(err.errorJSON);
 });
 
