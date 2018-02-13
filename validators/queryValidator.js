@@ -1,11 +1,7 @@
 const PropertyError = require("../validation/PropertyError.js");
 
-module.exports = class QueryValidator {
-    constructor(validationsObj) {
-        this.validationsObj = validationsObj;
-    }
-
-    validateQuery(query) {
+module.exports =
+    function validateQuery(query, joiSchema) {
         let errors = {};
 
         for (let param in query) {

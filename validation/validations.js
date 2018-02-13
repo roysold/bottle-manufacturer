@@ -17,10 +17,10 @@ module.exports = {
     isNumericString: value =>
         isString(value) && validator.isNumeric(value),
 
-    isInSortFormat: (value, list) => {
+    isInSortFormat: (value, fields) => {
         let field = value.replace(/^(\+|-)/, "");
 
-        return list.includes(field);
+        return fields.includes(field);
     },
 
     isSizeFormatString: value =>

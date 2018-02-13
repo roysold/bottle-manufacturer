@@ -1,12 +1,11 @@
 const ObjectValidator = require("../validators/ObjectValidator.js");
 const appendErrorToErrorsList = require("../appendErrorToErrorsList/appendErrorToErrorsList.js");
+const Joi = require("joi");
 
 module.exports = class PUTBodyValidator {
-    constructor(collection, validationsObj, entityProperties, IDPropertyName) {
+    constructor(collection, joiSchema) {
         this.collection = collection;
-        this.validationsObj = validationsObj;
-        this.entityProperties = entityProperties;
-        this.IDPropertyName = IDPropertyName;
+        this.joiSchema = joiSchema;
     }
 
     validateCollection() {
@@ -15,22 +14,24 @@ module.exports = class PUTBodyValidator {
 
         this.collection.forEach(
             (object, index) => {
-                let properties = this.getPropertiesToValidate(object);
-                let objectValidator = new ObjectValidator(properties, this.validationsObj);
-                let objectError = objectValidator.validateObject(object, index);
+                const result =
+                    Joi.validate(
+                        object,
+                        this.joiSchema,
+                        { allowUnknown: true, abortEarly: false }
+                    );
 
-                appendErrorToErrorsList(errors, objectError);
+                if (!_.isNull(result.error)) {
+                    result.error.details.forEach(detail => {
+                        errors.push(new PropertyError(`body[${index}]`,
+                            result.value[detail.context.key],
+                            detail.message
+                        ));
+                    });
+                }
             }
         );
 
         return errors;
-    }
-
-    getPropertiesToValidate(object) {
-        let properties = Object.keys(object).filter(
-            property => this.entityProperties.includes(property)
-        );
-
-        return [this.IDPropertyName].concat(properties);
     }
 }

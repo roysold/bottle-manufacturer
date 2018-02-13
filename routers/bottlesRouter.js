@@ -22,10 +22,10 @@ const { filteringQueryValidations } = require("../queryValidationData/index.js")
 
 /* Body Validation */
 const convertBodyToArray = require("../convertBodyToArrayMiddleware/convertBodyToArray.js");
-const { bottleBodyValidations } = require("../bodyValidationData/index.js");
+const bottleSchema = require("../schemas/bottleSchemas.js")
 
 /* Validators */
-const { POSTBodyValidator, PUTBodyValidator, QueryValidator } = require("../validators/index.js");
+const { validateCollection } = require("../validators/index.js");
 
 /* Entity Properties */
 const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
@@ -98,28 +98,18 @@ router.get("/:id", (req, res) => {
 router.delete("/:id", (req, res) => {
     deleteByIndex(collection, res.locals.indexOfObjectByID);
 
-    res.status(httpStatusCodes.ACCEPTED)
+    res.status(httpStatusCodes.OK)
         .send("Bottle deleted.");
 });
 
 function bodyValidations(req, res, next) {
-    const collectionValidatorType = collectionValidatorTypes[req.method];
-
-    const collectionValidator = new collectionValidatorType(
-        req.body,
-        bottleBodyValidations,
-        entityProperties,
-        IDPropertyName
-    );
-
-    res.locals.errors = collectionValidator.validateCollection();
+    res.locals.errors =
+        validateCollection(
+            req.body,
+            bottleSchema[req.method]
+        );
 
     next();
-}
-
-const collectionValidatorTypes = {
-    POST: POSTBodyValidator,
-    PUT: PUTBodyValidator
 }
 
 const IDGenerator = generateNextNumericID("9");

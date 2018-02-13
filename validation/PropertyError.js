@@ -8,6 +8,6 @@ module.exports = class PropertyError {
     constructor(location, value = "", msg) {
         this.location = location;
         this.value = value;
-        this.msg = msg;
+        this.message = msg;
     }
 }
