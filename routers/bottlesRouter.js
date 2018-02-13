@@ -14,7 +14,7 @@ const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
 const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
 
 /* ID Validation */
-const appendObjectToList = require("../appendObjectIfObjectNotEmpty/appendObjectToList.js");
+const appendErrorToErrorsList = require("../appendErrorToErrorsList/appendErrorToErrorsList.js");
 const getIndexByID = require("../IDParamMiddleware/getIndexByID.js");
 
 /* Query Validation */
@@ -55,11 +55,7 @@ function queryValidations(req, res, next) {
     res.locals.errors = [];
     const queryError = filteringQueryValidator.validateQuery(req.query);
 
-    try {
-        appendObjectToList(res.locals.errors, queryError);
-    } catch (error) {
-        console.log(error);
-    }
+    appendErrorToErrorsList(res.locals.errors, queryError);
 
     next()
 }
@@ -87,7 +83,7 @@ router.get("/",
 
 router.param("id",
     (req, res, next) => {
-        res.locals.indexOfObjectByID = getIndexByID(collection, IDPropertyName, req.params[IDPropertyName]);
+        res.locals.indexOfObjectByID = getIndexByID(collection, req.params[IDPropertyName], IDPropertyName);
 
         res.locals.indexOfObjectByID === -1 ?
             next(new IDNotFoundError(req.params[IDPropertyName], "params"))
@@ -100,7 +96,7 @@ router.get("/:id", (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-    deleteFromCollectionByIndex(collection, res.locals.indexOfObjectByID);
+    deleteByIndex(collection, res.locals.indexOfObjectByID);
 
     res.status(httpStatusCodes.ACCEPTED)
         .send("Bottle deleted.");
@@ -158,7 +154,7 @@ router.put("/",
         if (res.locals.errors.length !== 0) {
             next(new UnprocessableEntityError(res.locals.errors));
         } else {
-            updateEntities(collection, req.body, entityProperties, IDPropertyName);
+            updateObjects(collection, req.body, entityProperties, IDPropertyName);
             res.send()
         }
     }

@@ -1,5 +1,5 @@
-const {ObjectValidator} = require("../validators/index.js");
-const appendObjectToList = require("../appendObjectToList/appendObjectToList.js");
+const ObjectValidator = require("../validators/ObjectValidator.js");
+const appendErrorToErrorsList = require("../appendErrorToErrorsList/appendErrorToErrorsList.js");
 
 module.exports = class POSTBodyValidator {
     constructor(collection, validationsObj, entityProperties, IDPropertyName) {
@@ -21,7 +21,8 @@ module.exports = class POSTBodyValidator {
         this.collection.forEach(
             (object, index) => {
                 let objectError = objectValidator.validateObject(object, index);
-                appendObjectIfObjectNotEmpty(errors, objectError);
+
+                appendErrorToErrorsList(errors, objectError);
             }
         );
 

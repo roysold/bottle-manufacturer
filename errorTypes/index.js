@@ -1,5 +1,6 @@
 module.exports = {
     BadQueryError: require("./BadQueryError.js"),
     ConflictError: require("./ConflictError.js"),
-    UnprocessableEntityError: require("./UnprocessableEntityError.js")
+    UnprocessableEntityError: require("./UnprocessableEntityError.js"),
+    IDNotFoundError: require("./IDNotFoundError.js")
 }

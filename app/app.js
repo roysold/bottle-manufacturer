@@ -29,7 +29,15 @@ app.use("/api/v1/bottles", bottlesRouter);
 // app.use("/api/v1/bottletypes", bottleTypesRouter);
 
 app.use("/", (err, req, res, next) => {
-    res.status(err.httpErrorCode).send(err.errorJSON);
+    console.log(`Time: ${new Date()}`);
+    console.log(`err.message: ${err.message}`);
+    console.log(`${err.stack !== undefined ? "stack: " + err.stack : ""}`);
+
+    if (err.httpErrorCode !== undefined) {
+        res.status(err.httpErrorCode).send(err.errorJSON);
+    } else {
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).send("Oops, server error...");
+    }
 });
 
 

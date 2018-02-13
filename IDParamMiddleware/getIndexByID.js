@@ -1,4 +1,4 @@
 module.exports =
-    getIndexByID =
-    (list, id, IDPropertyName) =>
-        list.findIndex(item => item[IDPropertyName] === id);
+    function getIndexByID(list, id, IDPropertyName) {
+        return list.findIndex(item => item[IDPropertyName] === id)
+    };

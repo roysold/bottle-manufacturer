@@ -1,5 +1,5 @@
-const {ObjectValidator} = require("../validators/index.js");
-const appendObjectToList = require("../appendObjectToList/appendObjectToList.js");
+const ObjectValidator = require("../validators/ObjectValidator.js");
+const appendErrorToErrorsList = require("../appendErrorToErrorsList/appendErrorToErrorsList.js");
 
 module.exports = class PUTBodyValidator {
     constructor(collection, validationsObj, entityProperties, IDPropertyName) {
@@ -17,9 +17,9 @@ module.exports = class PUTBodyValidator {
             (object, index) => {
                 let properties = this.getPropertiesToValidate(object);
                 let objectValidator = new ObjectValidator(properties, this.validationsObj);
-                let bottleError = objectValidator.validateObject(object, index);
+                let objectError = objectValidator.validateObject(object, index);
 
-                appendObjectIfObjectNotEmpty(errors, bottleError);
+                appendErrorToErrorsList(errors, objectError);
             }
         );
 

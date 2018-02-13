@@ -2,7 +2,7 @@ function sortByField(list, sortFields, dateFields) {
     let sortedList = list.slice();
 
     sortFields.slice().reverse().forEach(
-        sortfield => {
+        sortField => {
             let field = sortField.replace(/^(\+|-)/, "");
 
             sortedList.sort(
