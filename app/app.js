@@ -1,13 +1,13 @@
-const express = require("express");
-const httpStatusCodes = require("http-status-codes");
-const bodyParser = require("body-parser");
+import express from "express";
+import httpStatusCodes from "http-status-codes";
+import bodyParser from "body-parser";
 import bottlesRouter from "../routers/bottlesRouter.js";
 // var bottleTypesRouter = require("../routers/bottleTypesRouter.js").router;
 
 let app = express();
 
 app.use("/", (req, res, next) => {
-    console.log("Request received.");
+    console.log("\nRequest received.");
     next();
 });
 

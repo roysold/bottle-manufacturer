@@ -1,4 +1,4 @@
-module.exports = function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
+export default function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
     listWithUpdates.forEach(objectFromBody => {
         const entityToModify = listToUpdate.find(
             entity => entity[IDPropertyName] === objectFromBody[IDPropertyName]

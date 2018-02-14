@@ -4,7 +4,7 @@
 //     value: "%%%",
 //     msg: "Must be a number"
 // }
-module.exports = class PropertyError {
+export default class PropertyError {
     constructor(location, value = "", msg) {
         this.location = location;
         this.value = value;

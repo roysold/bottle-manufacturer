@@ -1,6 +1,6 @@
-const httpStatusCodes = require("http-status-codes");
+import httpStatusCodes from "http-status-codes";
 
-module.exports = class IDNotFoundError {
+export default class IDNotFoundError {
     constructor(id, location) {
         this.message = "No bottle with this ID.";
         this.id = id;

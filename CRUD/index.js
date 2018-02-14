@@ -1,6 +1,12 @@
-module.exports = {
-    getObjects: require("./getObjects.js"),
-    addObjects: require("./addObjects.js"),
-    updateObjects: require("./updateObjects.js"),
-    deleteByIndex: require("./deleteByIndex.js")
+import getObjects from "./getObjects.js";
+import addObjects from "./addObjects.js";
+import updateObjects from "./updateObjects.js";
+import deleteByIndex from "./deleteByIndex.js";
+
+
+export {
+    getObjects,
+    addObjects,
+    updateObjects,
+    deleteByIndex,
 }

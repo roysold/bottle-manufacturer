@@ -4,7 +4,8 @@
   "description": "",
   "main": "./app/app.js",
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack & node build/bundle.js",
+    "startDevServer": "webpack-dev-server",
     "run-bundle": "node build/bundle.js",
     "run-app": "node app/app.js",
     "build": "webpack"
@@ -12,9 +13,6 @@
   "babel": {
     "presets": [
       "es2015"
-    ],
-    "plugins": [
-      "transform-regenerator"
     ]
   },
   "keywords": [],

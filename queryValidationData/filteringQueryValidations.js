@@ -1,8 +1,8 @@
-const { isInSortFormat, isIn, isNumericString } = require("../validation/validations.js");
+import { isInSortFormat, isIn, isNumericString } from "../validation/validations.js";//
 
 function areAllTrue(values) { return values.every(value => value === true); }
 
-function filteringQueryValidations(fields) {
+export default function filteringQueryValidations(fields) {
     return {
         "sort": {
             isValid: values =>
@@ -25,5 +25,3 @@ function filteringQueryValidations(fields) {
         }
     }
 }
-
-module.exports = filteringQueryValidations;

@@ -1,10 +1,10 @@
-const validator = require("validator");
+import validator from "validator";
 
 function isString(value) {
     return typeof value === "string"
 }
 
-module.exports = {
+export default {
     isAlphanumericString: value =>
         isString(value) && validator.isAlphanumeric(value),
 

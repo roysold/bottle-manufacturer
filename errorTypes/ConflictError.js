@@ -1,6 +1,6 @@
-const httpStatusCodes = require("http-status-codes");
+import httpStatusCodes from "http-status-codes";
 
-class ConflictError {
+export default class ConflictError {
     constructor(id) {
         this.message = "Conflicting IDs in body.";
         this.conflictingID = id;
@@ -19,5 +19,3 @@ class ConflictError {
         return httpStatusCodes.CONFLICT;
     }
 }
-
-module.exports = ConflictError;

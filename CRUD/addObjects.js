@@ -1,8 +1,8 @@
-const { addLinksPropertyToList } = require("../filters/listFilters.js");
+import { addLinksPropertyToList } from "../filters/listFilters.js";
 
 // TODO insertEntities?
- //TODO addobjects or entities
-module.exports = function addObjects(
+//TODO addobjects or entities
+export default function addObjects(
     objects,
     objectsToAdd,
     entityProperties,

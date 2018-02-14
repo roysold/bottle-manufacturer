@@ -1,6 +1,6 @@
-const PropertyError = require("../validation/PropertyError.js");
+import PropertyError from "../validation/PropertyError.js";
 
-module.exports = class ObjectValidator {
+export default class ObjectValidator {
     constructor(properties, validationsObj) {
         this.propertiesToValidate = properties;
         this.validationsObj = validationsObj;

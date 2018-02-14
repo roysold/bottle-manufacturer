@@ -1,8 +1,8 @@
-const Joi = require("joi");
-const PropertyError = require("../validation/PropertyError.js");
-const _ = require("lodash");
+import Joi from "joi";
+import PropertyError from "../validation/PropertyError.js";
+import _ from "lodash";
 
-module.exports = function validateCollection(collection, joiSchema) {
+export default function validateCollection(collection, joiSchema) {
     // In POST, bottles in body must have all properties except for ID.        
     let errors = [];
 

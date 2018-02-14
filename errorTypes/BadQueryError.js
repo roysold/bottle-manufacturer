@@ -1,6 +1,6 @@
-const httpStatusCodes = require("http-status-codes");
+import httpStatusCodes from "http-status-codes";
 
-module.exports = class BadQueryError {
+export default class BadQueryError {
     constructor(errorJSON) {
         this.errorJSON = errorJSON;
     }

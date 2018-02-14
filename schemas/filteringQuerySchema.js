@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from "joi";
 
 function areAllTrue(values) { return values.every(value => value === true); }
 

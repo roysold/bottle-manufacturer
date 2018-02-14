@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from "joi";
 
 const POSTbottleSchema = {
     creationDate: Joi.date().required(),
@@ -13,7 +13,7 @@ const PUTbottleSchema = {
     factoryID: Joi.string().regex(/^\d+$/)
 }
 
-module.exports = {
-    POST: POSTbottleSchema,
-    PUT: PUTbottleSchema
+export {
+    POSTbottleSchema,
+    PUTbottleSchema
 };

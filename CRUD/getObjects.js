@@ -1,6 +1,6 @@
-const { sortByField, getListWithSelectedFields } = require("../filters/listFilters.js");
+import { sortByField, getListWithSelectedFields } from "../filters/listFilters.js";
 
-module.exports = function getObjects(objects, dateProperties, query) {
+export default function getObjects(objects, dateProperties, query) {
     let { offset, limit, fields, sort } = query;
 
     sort = (sort === undefined) ? [] : sort.split(",");

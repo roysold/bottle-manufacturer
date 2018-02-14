@@ -1,4 +1,4 @@
-const { IDNotFoundError, ConflictError } = require("../errorTypes/index.js");
+import { IDNotFoundError, ConflictError } from "../errorTypes/index.js";
 
 function getNonExistentIDObjectIndex(objects, objectsToCheck, IDPropertyName) {
     return objectsToCheck.findIndex(objectToCheck =>
@@ -58,7 +58,7 @@ const checkForIDConflicts = IDPropertyName =>
         next();
     }
 
-module.exports = {
-    checkForNonExistentID: checkForNonExistentID,
-    checkForIDConflicts: checkForIDConflicts
+export {
+    checkForNonExistentID,
+    checkForIDConflicts
 };

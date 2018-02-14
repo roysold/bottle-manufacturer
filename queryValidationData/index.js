@@ -1,3 +1,3 @@
-module.exports = {
-    filteringQueryValidations: require("./filteringQueryValidations.js")
-}
+import filteringQueryValidations from "./filteringQueryValidations.js";
+
+export { filteringQueryValidations };

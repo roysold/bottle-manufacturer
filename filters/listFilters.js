@@ -36,7 +36,7 @@ function getCompareItemByFieldFunction(field, isDate, ascending) {
         return (item1, item2) => {
             let { value1, value2 } = getComparableValues(item1[field], item2[field], isDate);
 
-        return value2 - value1;
+            return value2 - value1;
         }
     } else {
         return (item1, item2) => {
@@ -82,9 +82,9 @@ function addLinksPropertyToObject(obj, linkDataToAdd) {
     return objectToReturn;
 }
 
-module.exports = {
-    sortByField: sortByField,
-    getListWithSelectedFields: getListWithSelectedFields,
-    addLinksPropertyToList: addLinksPropertyToList,
-    addLinksPropertyToObject: addLinksPropertyToObject
+export {
+    sortByField,
+    getListWithSelectedFields,
+    addLinksPropertyToList,
+    addLinksPropertyToObject
 }

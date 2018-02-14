@@ -1,4 +1,3 @@
-module.exports =
-    function deleteByIndex(collection, index) {
-        collection.splice(index, 1)
-    };
+export default function deleteByIndex(collection, index) {
+    collection.splice(index, 1)
+};

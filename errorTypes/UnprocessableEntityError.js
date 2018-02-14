@@ -1,6 +1,6 @@
-const httpStatusCodes = require("http-status-codes");
+import httpStatusCodes from "http-status-codes";
 
-class UnprocessableEntityError {
+export default class UnprocessableEntityError {
     constructor(errors) {
         this.errors = errors;
     }
@@ -13,5 +13,3 @@ class UnprocessableEntityError {
         return httpStatusCodes.UNPROCESSABLE_ENTITY;
     }
 }
-
-module.exports = UnprocessableEntityError;

@@ -1,4 +1,4 @@
-module.exports = function* generateNextNumericID(startID) {
+export default function* generateNextNumericID(startID) {
     let currentID = parseInt(startID);
 
     while (true) {

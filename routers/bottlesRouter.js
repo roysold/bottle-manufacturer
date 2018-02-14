@@ -1,39 +1,39 @@
-const express = require('express');
-const httpStatusCodes = require("http-status-codes");
+import express from "express";
+import httpStatusCodes from "http-status-codes";
 
 /* Error types */
-const { UnprocessableEntityError, BadQueryError, IDNotFoundError } = require("../errorTypes/index.js");
+import { UnprocessableEntityError, BadQueryError, IDNotFoundError } from "../errorTypes/index.js";
 
 /* CRUD Functions*/
-const { getObjects, addObjects, updateObjects, deleteByIndex } = require("../CRUD/index.js");
+import { getObjects, addObjects, updateObjects, deleteByIndex } from "../CRUD/index.js";
 
 /* POST bottles */
-const generateNextNumericID = require("../IDGenerators/IDGenerators.js");
+import generateNextNumericID from "../IDGenerators/IDGenerators.js";
 
 /* PUT ID Validation */
-const { checkForNonExistentID, checkForIDConflicts } = require("../IDValidations/IDValidations.js");
+import { checkForNonExistentID, checkForIDConflicts } from "../IDValidations/IDValidations.js";
 
 /* ID Validation */
-const appendErrorToErrorsList = require("../appendErrorToErrorsList/appendErrorToErrorsList.js");
-const getIndexByID = require("../IDParamMiddleware/getIndexByID.js");
+import appendErrorToErrorsList from "../appendErrorToErrorsList/appendErrorToErrorsList.js"; //
+import getIndexByID from "../IDParamMiddleware/getIndexByID.js";
 
 /* Query Validation */
-const { filteringQueryValidations } = require("../queryValidationData/index.js");
+import { filteringQueryValidations} from "../queryValidationData/index.js";
 
 /* Body Validation */
-const convertBodyToArray = require("../convertBodyToArrayMiddleware/convertBodyToArray.js");
-const bottleSchema = require("../schemas/bottleSchemas.js")
+import convertBodyToArray from "../convertBodyToArrayMiddleware/convertBodyToArray.js";
+import bottleSchema from "../schemas/bottleSchemas.js";
 
 /* Validators */
-const { validateCollection, validateQuery } = require("../validators/index.js");
+import { validateCollection, validateQuery } from "../validators/index.js";
 
 /* Entity Properties */
-const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
+import { entityProperties, IDPropertyName, dateProperties } from "../entityProperties/bottleProperties.js";
 
 /* Data */
 let collection = require("../data/bottles.json");
-const { addLinksPropertyToList } = require("../filters/listFilters.js");
-const concatURLs = require("../concatURLs/concatURLs.js");
+import { addLinksPropertyToList } from "../filters/listFilters.js";
+import concatURLs from "../concatURLs/concatURLs.js";
 
 const router = express.Router();
 
@@ -43,13 +43,6 @@ collection = addLinksPropertyToList(
             ["self", concatURLs("/api/v1/bottles", bottle[IDPropertyName])]
         ]
 );
-
-// const filteringQueryValidator =
-//     new QueryValidator(
-//         filteringQueryValidations(
-//             entityProperties
-//         )
-//     );
 
 function queryValidations(req, res, next) {
     res.locals.errors = [];

@@ -76,6 +76,9 @@ module.exports = require("http-status-codes");
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 function sortByField(list, sortFields, dateFields) {
     var sortedList = list.slice();
 
@@ -156,12 +159,10 @@ function addLinksPropertyToObject(obj, linkDataToAdd) {
     return objectToReturn;
 }
 
-module.exports = {
-    sortByField: sortByField,
-    getListWithSelectedFields: getListWithSelectedFields,
-    addLinksPropertyToList: addLinksPropertyToList,
-    addLinksPropertyToObject: addLinksPropertyToObject
-};
+exports.sortByField = sortByField;
+exports.getListWithSelectedFields = getListWithSelectedFields;
+exports.addLinksPropertyToList = addLinksPropertyToList;
+exports.addLinksPropertyToObject = addLinksPropertyToObject;
 
 /***/ }),
 /* 2 */
@@ -169,6 +170,10 @@ module.exports = {
 
 "use strict";
 
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -178,7 +183,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 //     value: "%%%",
 //     msg: "Must be a number"
 // }
-module.exports = function PropertyError(location) {
+var PropertyError = function PropertyError(location) {
     var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
     var msg = arguments[2];
 
@@ -188,6 +193,8 @@ module.exports = function PropertyError(location) {
     this.value = value;
     this.message = msg;
 };
+
+exports.default = PropertyError;
 
 /***/ }),
 /* 3 */
@@ -202,11 +209,14 @@ module.exports = require("express");
 "use strict";
 
 
-module.exports = {
-    BadQueryError: __webpack_require__(10),
-    ConflictError: __webpack_require__(11),
-    UnprocessableEntityError: __webpack_require__(12),
-    IDNotFoundError: __webpack_require__(13)
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
+    BadQueryError: __webpack_require__(11),
+    ConflictError: __webpack_require__(12),
+    UnprocessableEntityError: __webpack_require__(13),
+    IDNotFoundError: __webpack_require__(14)
 };
 
 /***/ }),
@@ -236,30 +246,38 @@ module.exports = require("babel-polyfill");
 "use strict";
 
 
-var _bottlesRouter = __webpack_require__(9);
+var _express = __webpack_require__(3);
+
+var _express2 = _interopRequireDefault(_express);
+
+var _httpStatusCodes = __webpack_require__(0);
+
+var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
+
+var _bodyParser = __webpack_require__(9);
+
+var _bodyParser2 = _interopRequireDefault(_bodyParser);
+
+var _bottlesRouter = __webpack_require__(10);
 
 var _bottlesRouter2 = _interopRequireDefault(_bottlesRouter);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(3);
-var httpStatusCodes = __webpack_require__(0);
-var bodyParser = __webpack_require__(37);
-
 // var bottleTypesRouter = require("../routers/bottleTypesRouter.js").router;
 
-var app = express();
+var app = (0, _express2.default)();
 
 app.use("/", function (req, res, next) {
-    console.log("Request received.");
+    console.log("\nRequest received.");
     next();
 });
 
-app.use(bodyParser.json());
+app.use(_bodyParser2.default.json());
 
 app.use("/", function (req, res, next) {
     if (req.get("content-type") !== undefined && !req.is("application/json")) {
-        res.status(httpStatusCodes.UNSUPPORTED_MEDIA_TYPE).send("API only supports content type: application/json");
+        res.status(_httpStatusCodes2.default.UNSUPPORTED_MEDIA_TYPE).send("API only supports content type: application/json");
     } else {
         next();
     }
@@ -267,7 +285,7 @@ app.use("/", function (req, res, next) {
 
 app.use(function (err, req, res, next) {
     if (err instanceof SyntaxError) {
-        res.status(httpStatusCodes.BAD_REQUEST).send("Invalid JSON syntax.");
+        res.status(_httpStatusCodes2.default.BAD_REQUEST).send("Invalid JSON syntax.");
     }
 });
 
@@ -282,112 +300,119 @@ app.use("/", function (err, req, res, next) {
     if (err.httpErrorCode !== undefined) {
         res.status(err.httpErrorCode).send(err.errorJSON);
     } else {
-        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).send("Oops, server error...");
+        res.status(_httpStatusCodes2.default.INTERNAL_SERVER_ERROR).send("Oops, server error...");
     }
 });
 
 app.use(function (req, res, next) {
-    res.status(httpStatusCodes.NOT_FOUND).send("This is not a route.");
+    res.status(_httpStatusCodes2.default.NOT_FOUND).send("This is not a route.");
 });
 
 app.listen(3000);
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports) {
+
+module.exports = require("body-parser");
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var express = __webpack_require__(3);
-var httpStatusCodes = __webpack_require__(0);
+var _express = __webpack_require__(3);
 
-/* Error types */
+var _express2 = _interopRequireDefault(_express);
 
-var _require = __webpack_require__(4),
-    UnprocessableEntityError = _require.UnprocessableEntityError,
-    BadQueryError = _require.BadQueryError,
-    IDNotFoundError = _require.IDNotFoundError;
+var _httpStatusCodes = __webpack_require__(0);
 
-/* CRUD Functions*/
+var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
+var _index = __webpack_require__(4);
 
-var _require2 = __webpack_require__(14),
-    getObjects = _require2.getObjects,
-    addObjects = _require2.addObjects,
-    updateObjects = _require2.updateObjects,
-    deleteByIndex = _require2.deleteByIndex;
+var _index2 = __webpack_require__(15);
 
-/* POST bottles */
+var _IDGenerators = __webpack_require__(20);
 
+var _IDGenerators2 = _interopRequireDefault(_IDGenerators);
 
-var generateNextNumericID = __webpack_require__(19);
+var _IDValidations = __webpack_require__(21);
 
-/* PUT ID Validation */
+var _appendErrorToErrorsList = __webpack_require__(22);
 
-var _require3 = __webpack_require__(20),
-    checkForNonExistentID = _require3.checkForNonExistentID,
-    checkForIDConflicts = _require3.checkForIDConflicts;
+var _appendErrorToErrorsList2 = _interopRequireDefault(_appendErrorToErrorsList);
 
-/* ID Validation */
+var _getIndexByID = __webpack_require__(23);
 
+var _getIndexByID2 = _interopRequireDefault(_getIndexByID);
 
-var appendErrorToErrorsList = __webpack_require__(21);
-var getIndexByID = __webpack_require__(22);
+var _index3 = __webpack_require__(24);
 
-/* Query Validation */
+var _convertBodyToArray = __webpack_require__(28);
 
-var _require4 = __webpack_require__(23),
-    filteringQueryValidations = _require4.filteringQueryValidations;
+var _convertBodyToArray2 = _interopRequireDefault(_convertBodyToArray);
 
-/* Body Validation */
+var _bottleSchemas = __webpack_require__(29);
 
+var _bottleSchemas2 = _interopRequireDefault(_bottleSchemas);
 
-var convertBodyToArray = __webpack_require__(27);
-var bottleSchema = __webpack_require__(28);
+var _index4 = __webpack_require__(30);
 
-/* Validators */
+var _bottleProperties = __webpack_require__(35);
 
-var _require5 = __webpack_require__(29),
-    validateCollection = _require5.validateCollection,
-    validateQuery = _require5.validateQuery;
+var _listFilters = __webpack_require__(1);
 
-/* Entity Properties */
+var _concatURLs = __webpack_require__(36);
 
+var _concatURLs2 = _interopRequireDefault(_concatURLs);
 
-var _require6 = __webpack_require__(34),
-    entityProperties = _require6.entityProperties,
-    IDPropertyName = _require6.IDPropertyName,
-    dateProperties = _require6.dateProperties;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* Data */
 
 
-var collection = __webpack_require__(35);
+/* Validators */
 
-var _require7 = __webpack_require__(1),
-    addLinksPropertyToList = _require7.addLinksPropertyToList;
 
-var concatURLs = __webpack_require__(36);
+/* Body Validation */
+//
 
-var router = express.Router();
 
-collection = addLinksPropertyToList(collection, function (bottle) {
-    return [["self", concatURLs("/api/v1/bottles", bottle[IDPropertyName])]];
+/* PUT ID Validation */
+
+
+/* CRUD Functions*/
+var collection = __webpack_require__(37);
+
+/* Entity Properties */
+
+
+/* Query Validation */
+
+
+/* ID Validation */
+
+
+/* POST bottles */
+
+
+/* Error types */
+
+
+var router = _express2.default.Router();
+
+collection = (0, _listFilters.addLinksPropertyToList)(collection, function (bottle) {
+    return [["self", (0, _concatURLs2.default)("/api/v1/bottles", bottle[_bottleProperties.IDPropertyName])]];
 });
-
-// const filteringQueryValidator =
-//     new QueryValidator(
-//         filteringQueryValidations(
-//             entityProperties
-//         )
-//     );
 
 function queryValidations(req, res, next) {
     res.locals.errors = [];
-    var queryError = validateQuery(req.query, filteringQueryValidations(entityProperties));
+    var queryError = (0, _index4.validateQuery)(req.query, (0, _index3.filteringQueryValidations)(_bottleProperties.entityProperties));
 
-    appendErrorToErrorsList(res.locals.errors, queryError);
+    (0, _appendErrorToErrorsList2.default)(res.locals.errors, queryError);
 
     next();
 }
@@ -398,18 +423,18 @@ function queryValidations(req, res, next) {
 // Gets only the second last object.
 router.get("/", queryValidations, function (req, res, next) {
     if (res.locals.errors.length) {
-        next(new BadQueryError(res.locals.errors));
+        next(new _index.BadQueryError(res.locals.errors));
     } else {
-        var objectsToSend = getObjects(collection, dateProperties, req.query);
+        var objectsToSend = (0, _index2.getObjects)(collection, _bottleProperties.dateProperties, req.query);
 
         res.json(objectsToSend);
     }
 });
 
 router.param("id", function (req, res, next) {
-    res.locals.indexOfObjectByID = getIndexByID(collection, req.params[IDPropertyName], IDPropertyName);
+    res.locals.indexOfObjectByID = (0, _getIndexByID2.default)(collection, req.params[_bottleProperties.IDPropertyName], _bottleProperties.IDPropertyName);
 
-    res.locals.indexOfObjectByID === -1 ? next(new IDNotFoundError(req.params[IDPropertyName], "params")) : next();
+    res.locals.indexOfObjectByID === -1 ? next(new _index.IDNotFoundError(req.params[_bottleProperties.IDPropertyName], "params")) : next();
 });
 
 router.get("/:id", function (req, res) {
@@ -417,36 +442,36 @@ router.get("/:id", function (req, res) {
 });
 
 router.delete("/:id", function (req, res) {
-    deleteByIndex(collection, res.locals.indexOfObjectByID);
+    (0, _index2.deleteByIndex)(collection, res.locals.indexOfObjectByID);
 
-    res.status(httpStatusCodes.OK).send("Bottle deleted.");
+    res.status(_httpStatusCodes2.default.OK).send("Bottle deleted.");
 });
 
 function bodyValidations(req, res, next) {
-    res.locals.errors = validateCollection(req.body, bottleSchema[req.method]);
+    res.locals.errors = (0, _index4.validateCollection)(req.body, _bottleSchemas2.default[req.method]);
 
     next();
 }
 
-var IDGenerator = generateNextNumericID("9");
+var IDGenerator = (0, _IDGenerators2.default)("9");
 
-router.post("/", convertBodyToArray, bodyValidations, function (req, res, next) {
+router.post("/", _convertBodyToArray2.default, bodyValidations, function (req, res, next) {
     if (res.locals.errors.length) {
-        next(new UnprocessableEntityError(res.locals.errors));
+        next(new _index.UnprocessableEntityError(res.locals.errors));
     } else {
-        collection = addObjects(collection, req.body, entityProperties, IDPropertyName, IDGenerator, function (object) {
-            return [["self", concatURLs(req.originalUrl, object[IDPropertyName])]];
+        collection = (0, _index2.addObjects)(collection, req.body, _bottleProperties.entityProperties, _bottleProperties.IDPropertyName, IDGenerator, function (object) {
+            return [["self", (0, _concatURLs2.default)(req.originalUrl, object[_bottleProperties.IDPropertyName])]];
         });
 
-        res.status(httpStatusCodes.CREATED).send();
+        res.status(_httpStatusCodes2.default.CREATED).send();
     }
 });
 
-router.put("/", convertBodyToArray, bodyValidations, checkForNonExistentID(collection, IDPropertyName), checkForIDConflicts(IDPropertyName), function (req, res, next) {
+router.put("/", _convertBodyToArray2.default, bodyValidations, (0, _IDValidations.checkForNonExistentID)(collection, _bottleProperties.IDPropertyName), (0, _IDValidations.checkForIDConflicts)(_bottleProperties.IDPropertyName), function (req, res, next) {
     if (res.locals.errors.length !== 0) {
-        next(new UnprocessableEntityError(res.locals.errors));
+        next(new _index.UnprocessableEntityError(res.locals.errors));
     } else {
-        updateObjects(collection, req.body, entityProperties, IDPropertyName);
+        (0, _index2.updateObjects)(collection, req.body, _bottleProperties.entityProperties, _bottleProperties.IDPropertyName);
         res.send();
     }
 });
@@ -454,19 +479,27 @@ router.put("/", convertBodyToArray, bodyValidations, checkForNonExistentID(colle
 module.exports = router;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _httpStatusCodes = __webpack_require__(0);
+
+var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var httpStatusCodes = __webpack_require__(0);
-
-module.exports = function () {
+var BadQueryError = function () {
     function BadQueryError(errorJSON) {
         _classCallCheck(this, BadQueryError);
 
@@ -476,25 +509,35 @@ module.exports = function () {
     _createClass(BadQueryError, [{
         key: "httpErrorCode",
         get: function get() {
-            return httpStatusCodes.BAD_REQUEST;
+            return _httpStatusCodes2.default.BAD_REQUEST;
         }
     }]);
 
     return BadQueryError;
 }();
 
+exports.default = BadQueryError;
+
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _httpStatusCodes = __webpack_require__(0);
 
-var httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var ConflictError = function () {
     function ConflictError(id) {
@@ -517,27 +560,35 @@ var ConflictError = function () {
     }, {
         key: "httpErrorCode",
         get: function get() {
-            return httpStatusCodes.CONFLICT;
+            return _httpStatusCodes2.default.CONFLICT;
         }
     }]);
 
     return ConflictError;
 }();
 
-module.exports = ConflictError;
+exports.default = ConflictError;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _httpStatusCodes = __webpack_require__(0);
 
-var httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var UnprocessableEntityError = function () {
     function UnprocessableEntityError(errors) {
@@ -554,29 +605,37 @@ var UnprocessableEntityError = function () {
     }, {
         key: "httpErrorCode",
         get: function get() {
-            return httpStatusCodes.UNPROCESSABLE_ENTITY;
+            return _httpStatusCodes2.default.UNPROCESSABLE_ENTITY;
         }
     }]);
 
     return UnprocessableEntityError;
 }();
 
-module.exports = UnprocessableEntityError;
+exports.default = UnprocessableEntityError;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _httpStatusCodes = __webpack_require__(0);
+
+var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var httpStatusCodes = __webpack_require__(0);
-
-module.exports = function () {
+var IDNotFoundError = function () {
     function IDNotFoundError(id, location) {
         _classCallCheck(this, IDNotFoundError);
 
@@ -599,26 +658,14 @@ module.exports = function () {
     }, {
         key: "httpErrorCode",
         get: function get() {
-            return httpStatusCodes.BAD_REQUEST;
+            return _httpStatusCodes2.default.BAD_REQUEST;
         }
     }]);
 
     return IDNotFoundError;
 }();
 
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-    getObjects: __webpack_require__(15),
-    addObjects: __webpack_require__(16),
-    updateObjects: __webpack_require__(17),
-    deleteByIndex: __webpack_require__(18)
-};
+exports.default = IDNotFoundError;
 
 /***/ }),
 /* 15 */
@@ -627,13 +674,51 @@ module.exports = {
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.deleteByIndex = exports.updateObjects = exports.addObjects = exports.getObjects = undefined;
+
+var _getObjects = __webpack_require__(16);
+
+var _getObjects2 = _interopRequireDefault(_getObjects);
+
+var _addObjects = __webpack_require__(17);
+
+var _addObjects2 = _interopRequireDefault(_addObjects);
+
+var _updateObjects = __webpack_require__(18);
+
+var _updateObjects2 = _interopRequireDefault(_updateObjects);
+
+var _deleteByIndex = __webpack_require__(19);
+
+var _deleteByIndex2 = _interopRequireDefault(_deleteByIndex);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.getObjects = _getObjects2.default;
+exports.addObjects = _addObjects2.default;
+exports.updateObjects = _updateObjects2.default;
+exports.deleteByIndex = _deleteByIndex2.default;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = getObjects;
+
+var _listFilters = __webpack_require__(1);
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var _require = __webpack_require__(1),
-    sortByField = _require.sortByField,
-    getListWithSelectedFields = _require.getListWithSelectedFields;
-
-module.exports = function getObjects(objects, dateProperties, query) {
+function getObjects(objects, dateProperties, query) {
     var offset = query.offset,
         limit = query.limit,
         fields = query.fields,
@@ -645,38 +730,40 @@ module.exports = function getObjects(objects, dateProperties, query) {
     limit = limit === undefined ? objects.length - offset : parseInt(limit);
     fields = fields === undefined ? undefined : fields.split(",");
 
-    var sortedEntities = sortByField(objects, sort, dateProperties);
+    var sortedEntities = (0, _listFilters.sortByField)(objects, sort, dateProperties);
 
     var rangedEntities = sortedEntities.slice(offset, offset + limit);
 
-    var entitiesWithSelectedFields = fields ? getListWithSelectedFields(rangedEntities, [].concat(_toConsumableArray(fields), ["links"])) : rangedEntities;
+    var entitiesWithSelectedFields = fields ? (0, _listFilters.getListWithSelectedFields)(rangedEntities, [].concat(_toConsumableArray(fields), ["links"])) : rangedEntities;
 
     return entitiesWithSelectedFields;
-};
+}
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _require = __webpack_require__(1),
-    addLinksPropertyToList = _require.addLinksPropertyToList;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = addObjects;
+
+var _listFilters = __webpack_require__(1);
 
 // TODO insertEntities?
 //TODO addobjects or entities
-
-
-module.exports = function addObjects(objects, objectsToAdd, entityProperties, IDPropertyName, IDGenerator, generateLinks) {
+function addObjects(objects, objectsToAdd, entityProperties, IDPropertyName, IDGenerator, generateLinks) {
     var cleanEntitiesToAdd = objectsToAdd.map(function (entity, index) {
         return getObjectWithID(entity, entityProperties, IDPropertyName, IDGenerator);
     });
 
-    var entitiesWithLinks = addLinksPropertyToList(cleanEntitiesToAdd, generateLinks);
+    var entitiesWithLinks = (0, _listFilters.addLinksPropertyToList)(cleanEntitiesToAdd, generateLinks);
 
     return objects.concat(entitiesWithLinks);
-};
+}
 
 function getObjectWithID(object, properties, IDPropertyName, IDGenerator) {
     var objectWithID = {};
@@ -691,13 +778,17 @@ function getObjectWithID(object, properties, IDPropertyName, IDGenerator) {
 }
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = updateObjects;
+function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
     listWithUpdates.forEach(function (objectFromBody) {
         var entityToModify = listToUpdate.find(function (entity) {
             return entity[IDPropertyName] === objectFromBody[IDPropertyName];
@@ -705,7 +796,7 @@ module.exports = function updateObjects(listToUpdate, listWithUpdates, propertie
 
         updateObject(entityToModify, objectFromBody, properties);
     });
-};
+}
 
 var hasProperty = function hasProperty(object, property) {
     return object[property] !== undefined;
@@ -720,24 +811,35 @@ function updateObject(objToUpdate, objWithUpdates, properties) {
 }
 
 /***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function deleteByIndex(collection, index) {
-    collection.splice(index, 1);
-};
-
-/***/ }),
 /* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = /*#__PURE__*/regeneratorRuntime.mark(function generateNextNumericID(startID) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = deleteByIndex;
+function deleteByIndex(collection, index) {
+    collection.splice(index, 1);
+};
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = generateNextNumericID;
+
+var _marked = /*#__PURE__*/regeneratorRuntime.mark(generateNextNumericID);
+
+function generateNextNumericID(startID) {
     var currentID;
     return regeneratorRuntime.wrap(function generateNextNumericID$(_context) {
         while (1) {
@@ -763,19 +865,22 @@ module.exports = /*#__PURE__*/regeneratorRuntime.mark(function generateNextNumer
                     return _context.stop();
             }
         }
-    }, generateNextNumericID, this);
-});
+    }, _marked, this);
+}
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _require = __webpack_require__(4),
-    IDNotFoundError = _require.IDNotFoundError,
-    ConflictError = _require.ConflictError;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.checkForIDConflicts = exports.checkForNonExistentID = undefined;
+
+var _index = __webpack_require__(4);
 
 function getNonExistentIDObjectIndex(objects, objectsToCheck, IDPropertyName) {
     return objectsToCheck.findIndex(function (objectToCheck) {
@@ -834,7 +939,7 @@ var checkForNonExistentID = function checkForNonExistentID(collection, IDPropert
             var nonExistentIDEntityIndex = getNonExistentIDObjectIndex(collection, req.body, IDPropertyName);
 
             if (nonExistentIDEntityIndex !== -1) {
-                next(new IDNotFoundError(req.body[nonExistentIDEntityIndex][IDPropertyName]));
+                next(new _index.IDNotFoundError(req.body[nonExistentIDEntityIndex][IDPropertyName]));
             }
         }
 
@@ -848,7 +953,7 @@ var checkForIDConflicts = function checkForIDConflicts(IDPropertyName) {
             var conflictingID = findConflictingIDInList(req.body, "id");
 
             if (conflictingID !== "") {
-                next(new ConflictError(conflictingID));
+                next(new _index.ConflictError(conflictingID));
             }
         }
 
@@ -856,23 +961,8 @@ var checkForIDConflicts = function checkForIDConflicts(IDPropertyName) {
     };
 };
 
-module.exports = {
-    checkForNonExistentID: checkForNonExistentID,
-    checkForIDConflicts: checkForIDConflicts
-};
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function appendErrorToErrorsList(errorsList, errorObj) {
-    if (Object.keys(errorObj).length !== 0) {
-        errorsList.push(errorObj);
-    }
-};
+exports.checkForNonExistentID = checkForNonExistentID;
+exports.checkForIDConflicts = checkForIDConflicts;
 
 /***/ }),
 /* 22 */
@@ -881,11 +971,15 @@ module.exports = function appendErrorToErrorsList(errorsList, errorObj) {
 "use strict";
 
 
-module.exports = function getIndexByID(list, id, IDPropertyName) {
-    return list.findIndex(function (item) {
-        return item[IDPropertyName] === id;
-    });
-};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = appendErrorToErrorsList;
+function appendErrorToErrorsList(errorsList, errorObj) {
+    if (Object.keys(errorObj).length !== 0) {
+        errorsList.push(errorObj);
+    }
+}
 
 /***/ }),
 /* 23 */
@@ -894,8 +988,14 @@ module.exports = function getIndexByID(list, id, IDPropertyName) {
 "use strict";
 
 
-module.exports = {
-    filteringQueryValidations: __webpack_require__(24)
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = getIndexByID;
+function getIndexByID(list, id, IDPropertyName) {
+    return list.findIndex(function (item) {
+        return item[IDPropertyName] === id;
+    });
 };
 
 /***/ }),
@@ -905,10 +1005,34 @@ module.exports = {
 "use strict";
 
 
-var _require = __webpack_require__(25),
-    isInSortFormat = _require.isInSortFormat,
-    isIn = _require.isIn,
-    isNumericString = _require.isNumericString;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.filteringQueryValidations = undefined;
+
+var _filteringQueryValidations = __webpack_require__(25);
+
+var _filteringQueryValidations2 = _interopRequireDefault(_filteringQueryValidations);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.filteringQueryValidations = _filteringQueryValidations2.default;
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = filteringQueryValidations;
+
+var _validations = __webpack_require__(26);
+
+//
 
 function areAllTrue(values) {
     return values.every(function (value) {
@@ -921,7 +1045,7 @@ function filteringQueryValidations(fields) {
         "sort": {
             isValid: function isValid(values) {
                 return values.split(",").every(function (value) {
-                    return areAllTrue([isInSortFormat(value, fields)]);
+                    return areAllTrue([(0, _validations.isInSortFormat)(value, fields)]);
                 });
             },
             errorMsg: "Needs to be either <field_name>, +<field_name>, -<field_name>."
@@ -929,44 +1053,50 @@ function filteringQueryValidations(fields) {
         "fields": {
             isValid: function isValid(values) {
                 return values.split(",").every(function (value) {
-                    return areAllTrue([isIn(value, fields)]);
+                    return areAllTrue([(0, _validations.isIn)(value, fields)]);
                 });
             },
             errorMsg: "Needs to be one or more real fields."
         },
         "offset": {
             isValid: function isValid(value) {
-                return areAllTrue([isNumericString(value)]);
+                return areAllTrue([(0, _validations.isNumericString)(value)]);
             },
             errorMsg: "Needs to be an integer."
         },
         "limit": {
             isValid: function isValid(value) {
-                return areAllTrue([isNumericString(value)]);
+                return areAllTrue([(0, _validations.isNumericString)(value)]);
             },
             errorMsg: "Needs to be an integer."
         }
     };
 }
 
-module.exports = filteringQueryValidations;
-
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var validator = __webpack_require__(26);
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _validator = __webpack_require__(27);
+
+var _validator2 = _interopRequireDefault(_validator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function isString(value) {
     return typeof value === "string";
 }
 
-module.exports = {
+exports.default = {
     isAlphanumericString: function isAlphanumericString(value) {
-        return isString(value) && validator.isAlphanumeric(value);
+        return isString(value) && _validator2.default.isAlphanumeric(value);
     },
 
     isValidDateFormat: function isValidDateFormat(value) {
@@ -978,7 +1108,7 @@ module.exports = {
     },
 
     isNumericString: function isNumericString(value) {
-        return isString(value) && validator.isNumeric(value);
+        return isString(value) && _validator2.default.isNumeric(value);
     },
 
     isInSortFormat: function isInSortFormat(value, fields) {
@@ -988,9 +1118,10 @@ module.exports = {
     },
 
     isSizeFormatString: function isSizeFormatString(value) {
-        return isString(value) && validator.isFloat(stringWithoutLastChar(value)) && lastCharOfString(value);
+        return isString(value) && _validator2.default.isFloat(stringWithoutLastChar(value)) && lastCharOfString(value);
     }
 };
+
 
 var stringWithoutLastChar = function stringWithoutLastChar(str) {
     return str.slice(0, -1);
@@ -1000,25 +1131,10 @@ var lastCharOfString = function lastCharOfString(str) {
 };
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = require("validator");
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function convertBodyToArray(req, res, next) {
-    if (!Array.isArray(req.body)) {
-        req.body = [req.body];
-    }
-
-    next();
-};
 
 /***/ }),
 /* 28 */
@@ -1027,25 +1143,17 @@ module.exports = function convertBodyToArray(req, res, next) {
 "use strict";
 
 
-var Joi = __webpack_require__(5);
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = convertBodyToArray;
+function convertBodyToArray(req, res, next) {
+    if (!Array.isArray(req.body)) {
+        req.body = [req.body];
+    }
 
-var POSTbottleSchema = {
-    creationDate: Joi.date().required(),
-    orderID: Joi.string().regex(/^\d+$/).required(),
-    factoryID: Joi.string().regex(/^\d+$/).required()
-};
-
-var PUTbottleSchema = {
-    id: Joi.string().regex(/^\d+$/).required(),
-    creationDate: Joi.date(),
-    orderID: Joi.string().regex(/^\d+$/),
-    factoryID: Joi.string().regex(/^\d+$/)
-};
-
-module.exports = {
-    POST: POSTbottleSchema,
-    PUT: PUTbottleSchema
-};
+    next();
+}
 
 /***/ }),
 /* 29 */
@@ -1054,11 +1162,32 @@ module.exports = {
 "use strict";
 
 
-module.exports = {
-    validateCollection: __webpack_require__(30),
-    ObjectValidator: __webpack_require__(32),
-    validateQuery: __webpack_require__(33)
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.PUTbottleSchema = exports.POSTbottleSchema = undefined;
+
+var _joi = __webpack_require__(5);
+
+var _joi2 = _interopRequireDefault(_joi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var POSTbottleSchema = {
+    creationDate: _joi2.default.date().required(),
+    orderID: _joi2.default.string().regex(/^\d+$/).required(),
+    factoryID: _joi2.default.string().regex(/^\d+$/).required()
 };
+
+var PUTbottleSchema = {
+    id: _joi2.default.string().regex(/^\d+$/).required(),
+    creationDate: _joi2.default.date(),
+    orderID: _joi2.default.string().regex(/^\d+$/),
+    factoryID: _joi2.default.string().regex(/^\d+$/)
+};
+
+exports.POSTbottleSchema = POSTbottleSchema;
+exports.PUTbottleSchema = PUTbottleSchema;
 
 /***/ }),
 /* 30 */
@@ -1067,47 +1196,100 @@ module.exports = {
 "use strict";
 
 
-var Joi = __webpack_require__(5);
-var PropertyError = __webpack_require__(2);
-var _ = __webpack_require__(31);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.validateQuery = exports.ObjectValidator = exports.validateCollection = undefined;
 
-module.exports = function validateCollection(collection, joiSchema) {
-    // In POST, bottles in body must have all properties except for ID.        
-    var errors = [];
+var _validateCollection = __webpack_require__(31);
 
-    collection.forEach(function (object, index) {
-        var result = Joi.validate(object, joiSchema, { allowUnknown: true, abortEarly: false });
+var _validateCollection2 = _interopRequireDefault(_validateCollection);
 
-        if (!_.isNull(result.error)) {
-            result.error.details.forEach(function (detail) {
-                errors.push(new PropertyError("body[" + index + "]", result.value[detail.context.key], detail.message));
-            });
-        }
-    });
+var _ObjectValidator = __webpack_require__(33);
 
-    return errors;
-};
+var _ObjectValidator2 = _interopRequireDefault(_ObjectValidator);
+
+var _validateQuery = __webpack_require__(34);
+
+var _validateQuery2 = _interopRequireDefault(_validateQuery);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.validateCollection = _validateCollection2.default;
+exports.ObjectValidator = _ObjectValidator2.default;
+exports.validateQuery = _validateQuery2.default;
 
 /***/ }),
 /* 31 */
-/***/ (function(module, exports) {
-
-module.exports = require("lodash");
-
-/***/ }),
-/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = validateCollection;
+
+var _joi = __webpack_require__(5);
+
+var _joi2 = _interopRequireDefault(_joi);
+
+var _PropertyError = __webpack_require__(2);
+
+var _PropertyError2 = _interopRequireDefault(_PropertyError);
+
+var _lodash = __webpack_require__(32);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function validateCollection(collection, joiSchema) {
+    // In POST, bottles in body must have all properties except for ID.        
+    var errors = [];
+
+    collection.forEach(function (object, index) {
+        var result = _joi2.default.validate(object, joiSchema, { allowUnknown: true, abortEarly: false });
+
+        if (!_lodash2.default.isNull(result.error)) {
+            result.error.details.forEach(function (detail) {
+                errors.push(new _PropertyError2.default("body[" + index + "]", result.value[detail.context.key], detail.message));
+            });
+        }
+    });
+
+    return errors;
+}
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
+module.exports = require("lodash");
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _PropertyError = __webpack_require__(2);
+
+var _PropertyError2 = _interopRequireDefault(_PropertyError);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var PropertyError = __webpack_require__(2);
-
-module.exports = function () {
+var ObjectValidator = function () {
     function ObjectValidator(properties, validationsObj) {
         _classCallCheck(this, ObjectValidator);
 
@@ -1134,7 +1316,7 @@ module.exports = function () {
                     var propertyValue = object[property];
 
                     if (!propertyValidationData.isValid(propertyValue)) {
-                        errors[property] = new PropertyError(index === -1 ? "body" : "body[" + index + "]", propertyValue, propertyValidationData.errorMsg);
+                        errors[property] = new _PropertyError2.default(index === -1 ? "body" : "body[" + index + "]", propertyValue, propertyValidationData.errorMsg);
                     }
                 }
             } catch (err) {
@@ -1159,32 +1341,7 @@ module.exports = function () {
     return ObjectValidator;
 }();
 
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-// const ObjectValidator = require("../validators/ObjectValidator.js");
-var PropertyError = __webpack_require__(2);
-// const Joi = require("joi");
-// const _ = require("lodash");
-
-module.exports = function validateQuery(query, validationsObj) {
-    var errors = {};
-
-    for (var param in query) {
-        var paramValidationData = validationsObj[param];
-        var paramValue = query[param];
-
-        if (!paramValidationData.isValid(paramValue)) {
-            errors[param] = new PropertyError("query", paramValue, paramValidationData.errorMsg);
-        }
-    }
-
-    return Object.keys(errors).length === 0 ? {} : { errors: errors };
-};
+exports.default = ObjectValidator;
 
 /***/ }),
 /* 34 */
@@ -1193,17 +1350,50 @@ module.exports = function validateQuery(query, validationsObj) {
 "use strict";
 
 
-module.exports = {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = validateQuery;
+
+var _PropertyError = __webpack_require__(2);
+
+var _PropertyError2 = _interopRequireDefault(_PropertyError);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// const Joi = require("joi");
+// const _ = require("lodash");
+
+function validateQuery(query, validationsObj) {
+    var errors = {};
+
+    for (var param in query) {
+        var paramValidationData = validationsObj[param];
+        var paramValue = query[param];
+
+        if (!paramValidationData.isValid(paramValue)) {
+            errors[param] = new _PropertyError2.default("query", paramValue, paramValidationData.errorMsg);
+        }
+    }
+
+    return Object.keys(errors).length === 0 ? {} : { errors: errors };
+} // const ObjectValidator = require("../validators/ObjectValidator.js");
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
     entityProperties: ["id", "creationDate", "orderID", "factoryID"],
     IDPropertyName: "id",
     dateProperties: ["creationDate"]
 };
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports) {
-
-module.exports = [{"id":"1","creationDate":"2017-11-01","orderID":"1","factoryID":"1"},{"id":"2","creationDate":"2017-11-01","orderID":"1","factoryID":"1"},{"id":"3","creationDate":"2017-11-02","orderID":"1","factoryID":"1"},{"id":"4","creationDate":"2017-11-02","orderID":"2","factoryID":"1"},{"id":"5","creationDate":"2017-11-02","orderID":"2","factoryID":"1"},{"id":"6","creationDate":"2017-11-04","orderID":"2","factoryID":"1"},{"id":"7","creationDate":"2017-11-12","orderID":"3","factoryID":"2"},{"id":"8","creationDate":"2017-11-12","orderID":"3","factoryID":"2"}]
 
 /***/ }),
 /* 36 */
@@ -1212,15 +1402,19 @@ module.exports = [{"id":"1","creationDate":"2017-11-01","orderID":"1","factoryID
 "use strict";
 
 
-module.exports = function concatURLs(url1, url2) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = concatURLs;
+function concatURLs(url1, url2) {
     return "" + url1.replace(/\/*$/, "/") + url2;
-};
+}
 
 /***/ }),
 /* 37 */
 /***/ (function(module, exports) {
 
-module.exports = require("body-parser");
+module.exports = [{"id":"1","creationDate":"2017-11-01","orderID":"1","factoryID":"1"},{"id":"2","creationDate":"2017-11-01","orderID":"1","factoryID":"1"},{"id":"3","creationDate":"2017-11-02","orderID":"1","factoryID":"1"},{"id":"4","creationDate":"2017-11-02","orderID":"2","factoryID":"1"},{"id":"5","creationDate":"2017-11-02","orderID":"2","factoryID":"1"},{"id":"6","creationDate":"2017-11-04","orderID":"2","factoryID":"1"},{"id":"7","creationDate":"2017-11-12","orderID":"3","factoryID":"2"},{"id":"8","creationDate":"2017-11-12","orderID":"3","factoryID":"2"}]
 
 /***/ })
 /******/ ]);

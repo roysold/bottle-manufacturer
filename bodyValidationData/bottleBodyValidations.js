@@ -1,8 +1,8 @@
-const { isAlphanumericString, isValidDateFormat, isNumericString } = require("../validation/validations.js");
+import { isAlphanumericString, isValidDateFormat, isNumericString } from "../validation/validations.js";
 
 const areAllTrue = values => values.every(value => value === true);
 
-const propertiesValidations = {
+export default propertiesValidations = {
     "id": {
         isValid: (id) => areAllTrue([isNumericString(id)]),
         errorMsg: "Must be an numeric string without whitespace. Must not be empty."
@@ -20,5 +20,3 @@ const propertiesValidations = {
         errorMsg: "Must be an alphanumeric string without whitespace. Must not be empty."
     }
 };
-
-module.exports = propertiesValidations;

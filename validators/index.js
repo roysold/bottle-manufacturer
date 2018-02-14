@@ -1,5 +1,5 @@
-module.exports = {
-    validateCollection: require("./validateCollection.js"),
-    ObjectValidator: require("./ObjectValidator.js"),
-    validateQuery: require("./validateQuery.js")
-}
+import validateCollection from "./validateCollection.js";
+import ObjectValidator from "./ObjectValidator.js";
+import validateQuery from "./validateQuery.js";
+
+export { validateCollection, ObjectValidator, validateQuery }
