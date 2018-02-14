@@ -1,11 +1,14 @@
+// const ObjectValidator = require("../validators/ObjectValidator.js");
 const PropertyError = require("../validation/PropertyError.js");
+// const Joi = require("joi");
+// const _ = require("lodash");
 
 module.exports =
-    function validateQuery(query, joiSchema) {
+    function validateQuery(query, validationsObj) {
         let errors = {};
 
         for (let param in query) {
-            const paramValidationData = this.validationsObj[param];
+            const paramValidationData = validationsObj[param];
             const paramValue = query[param];
 
             if (!paramValidationData.isValid(paramValue)) {
@@ -20,4 +23,3 @@ module.exports =
 
         return Object.keys(errors).length === 0 ? {} : { errors: errors };
     }
-}

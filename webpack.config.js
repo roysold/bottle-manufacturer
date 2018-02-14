@@ -1,19 +1,37 @@
+const webpack = require('webpack');
+const path = require('path');
+const fs = require('fs');
+
+let nodeModules = {};
+
+fs.readdirSync('node_modules')
+    .filter(function (x) {
+        return ['.bin'].indexOf(x) === -1;
+    })
+    .forEach(function (mod) {
+        nodeModules[mod] = 'commonjs ' + mod;
+    });
+
 module.exports = {
-    entry: ["./app/app.js"],
+    entry: ["babel-polyfill", "./app/app.js"],
+    target: "node",
     output: {
-        path: __dirname + "/build",
+        path: path.join(__dirname, 'build'),
         filename: "bundle.js"
     },
+    externals: nodeModules,
     module: {
-        loaders: [{
-            loader: "babel-loader",
-            test: /\.js$/,
-            exclude: /node_modules/
-        }]
+        loaders: [
+            {
+                loader: "babel-loader",
+                test: /\.js$/,
+                exclude: /node_modules/
+            }
+        ]
     },
     devServer: {
         port: 3000,
         contentBase: "./build",
         inline: true
-    }
+    },
 }

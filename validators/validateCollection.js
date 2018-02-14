@@ -9,8 +9,8 @@ module.exports = function validateCollection(collection, joiSchema) {
     collection.forEach(
         (object, index) => {
             const result =
-                joiSchema.validate(
-                    object,
+                Joi.validate(
+                    object, joiSchema,
                     { allowUnknown: true, abortEarly: false }
                 );
 

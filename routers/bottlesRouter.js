@@ -25,7 +25,7 @@ const convertBodyToArray = require("../convertBodyToArrayMiddleware/convertBodyT
 const bottleSchema = require("../schemas/bottleSchemas.js")
 
 /* Validators */
-const { validateCollection } = require("../validators/index.js");
+const { validateCollection, validateQuery } = require("../validators/index.js");
 
 /* Entity Properties */
 const { entityProperties, IDPropertyName, dateProperties } = require("../entityProperties/bottleProperties.js");
@@ -44,16 +44,16 @@ collection = addLinksPropertyToList(
         ]
 );
 
-const filteringQueryValidator =
-    new QueryValidator(
-        filteringQueryValidations(
-            entityProperties
-        )
-    );
+// const filteringQueryValidator =
+//     new QueryValidator(
+//         filteringQueryValidations(
+//             entityProperties
+//         )
+//     );
 
 function queryValidations(req, res, next) {
     res.locals.errors = [];
-    const queryError = filteringQueryValidator.validateQuery(req.query);
+    const queryError = validateQuery(req.query, filteringQueryValidations(entityProperties));
 
     appendErrorToErrorsList(res.locals.errors, queryError);
 

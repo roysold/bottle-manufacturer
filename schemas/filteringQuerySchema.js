@@ -1,12 +1,19 @@
-// const Joi = require("joi");
+const Joi = require("joi");
 
-// function areAllTrue(values) { return values.every(value => value === true); }
+function areAllTrue(values) { return values.every(value => value === true); }
 
-// // function filteringQueryValidations(fields) {
-// //     return {
-// //         sort:
-// //     };
-// // };
-// const sortFieldSchema = Joi.replace(/^(\+|-)/, "").
+function filteringQueryValidations(fields) {
 
-// // module.exports =
+};
+
+function sortFieldValidation(fields) {
+    const sortFormatFields = [];
+
+    fields.forEach(field => {
+        sortFormatFields.concat([field, `-${field}`, `+${field}`]);
+    });
+
+    return Joi.string().valid(sortFormatFields);
+}
+
+// module.exports =
