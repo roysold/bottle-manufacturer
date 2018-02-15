@@ -1,5 +1,6 @@
 import express from "express";
 import httpStatusCodes from "http-status-codes";
+import _ from "lodash";
 
 /* Error types */
 import { UnprocessableEntityError, BadQueryError, IDNotFoundError } from "../errorTypes/index.js";
@@ -102,7 +103,11 @@ function bodyValidations(req, res, next) {
             bottleSchema[req.method]
         );
 
-    next();
+    if (!_.isEmpty(res.locals.errors)) {
+        next(new UnprocessableEntityError(res.locals.errors));
+    } else {
+        next();
+    }
 }
 
 const IDGenerator = generateNextNumericID("9");
@@ -111,20 +116,16 @@ router.post("/",
     convertBodyToArray,
     bodyValidations,
     (req, res, next) => {
-        if (res.locals.errors.length) {
-            next(new UnprocessableEntityError(res.locals.errors));
-        } else {
-            collection = addObjects(
-                collection,
-                req.body,
-                entityProperties,
-                IDPropertyName,
-                IDGenerator,
-                object => [["self", concatURLs(req.originalUrl, object[IDPropertyName])]]
-            );
+        collection = addObjects(
+            collection,
+            req.body,
+            entityProperties,
+            IDPropertyName,
+            IDGenerator,
+            object => [["self", concatURLs(req.originalUrl, object[IDPropertyName])]]
+        );
 
-            res.status(httpStatusCodes.CREATED).send();
-        }
+        res.status(httpStatusCodes.CREATED).send();
     }
 );
 
@@ -134,12 +135,8 @@ router.put("/",
     checkForNonExistentID(collection, IDPropertyName),
     checkForIDConflicts(IDPropertyName),
     (req, res, next) => {
-        if (res.locals.errors.length !== 0) {
-            next(new UnprocessableEntityError(res.locals.errors));
-        } else {
-            updateObjects(collection, req.body, entityProperties, IDPropertyName);
-            res.send()
-        }
+        updateObjects(collection, req.body, entityProperties, IDPropertyName);
+        res.send()
     }
 );
 

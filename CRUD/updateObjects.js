@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 export default function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
     listWithUpdates.forEach(objectFromBody => {
         const entityToModify = listToUpdate.find(
@@ -8,7 +10,7 @@ export default function updateObjects(listToUpdate, listWithUpdates, properties,
     });
 }
 
-const hasProperty = (object, property) => object[property] !== undefined;
+const hasProperty = (object, property) => !_.isUndefined(object[property]);
 
 function updateObject(objToUpdate, objWithUpdates, properties) {
     properties.forEach(property => {

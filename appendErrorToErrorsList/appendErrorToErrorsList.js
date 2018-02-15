@@ -1,5 +1,7 @@
+import _ from "lodash";
+
 export default function appendErrorToErrorsList(errorsList, errorObj) {
-    if (Object.keys(errorObj).length !== 0) {
+    if (!_.isEmpty(Object.keys(errorObj))) {
         errorsList.push(errorObj);
     }
 }

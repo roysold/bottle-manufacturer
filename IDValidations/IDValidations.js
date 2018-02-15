@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { IDNotFoundError, ConflictError } from "../errorTypes/index.js";
 
 function getNonExistentIDObjectIndex(objects, objectsToCheck, IDPropertyName) {
@@ -26,20 +27,16 @@ function findConflictingIDInList(list, IDPropertyName) {
     return conflictingID;
 }
 
-const isArrayEmpty = arr => arr.length === 0;
-
 const checkForNonExistentID = (collection, IDPropertyName) =>
     (req, res, next) => {
-        if (isArrayEmpty(res.locals.errors)) {
-            const nonExistentIDEntityIndex = getNonExistentIDObjectIndex(
-                collection,
-                req.body,
-                IDPropertyName
-            );
+        const nonExistentIDEntityIndex = getNonExistentIDObjectIndex(
+            collection,
+            req.body,
+            IDPropertyName
+        );
 
-            if (nonExistentIDEntityIndex !== -1) {
-                next(new IDNotFoundError(req.body[nonExistentIDEntityIndex][IDPropertyName]));
-            }
+        if (nonExistentIDEntityIndex !== -1) {
+            next(new IDNotFoundError(req.body[nonExistentIDEntityIndex][IDPropertyName]));
         }
 
         next();
@@ -47,12 +44,10 @@ const checkForNonExistentID = (collection, IDPropertyName) =>
 
 const checkForIDConflicts = IDPropertyName =>
     (req, res, next) => {
-        if (isArrayEmpty(res.locals.errors)) {
-            const conflictingID = findConflictingIDInList(req.body, "id");
+        const conflictingID = findConflictingIDInList(req.body, "id");
 
-            if (conflictingID !== "") {
-                next(new ConflictError(conflictingID));
-            }
+        if (!_.isEmpty(conflictingID)) {
+            next(new ConflictError(conflictingID));
         }
 
         next();

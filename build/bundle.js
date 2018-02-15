@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,6 +71,12 @@ module.exports = require("http-status-codes");
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+module.exports = require("lodash");
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -165,7 +171,7 @@ exports.addLinksPropertyToList = addLinksPropertyToList;
 exports.addLinksPropertyToObject = addLinksPropertyToObject;
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -197,13 +203,13 @@ var PropertyError = function PropertyError(location) {
 exports.default = PropertyError;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -214,19 +220,19 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.IDNotFoundError = exports.UnprocessableEntityError = exports.ConflictError = exports.BadQueryError = undefined;
 
-var _BadQueryError = __webpack_require__(11);
+var _BadQueryError = __webpack_require__(12);
 
 var _BadQueryError2 = _interopRequireDefault(_BadQueryError);
 
-var _ConflictError = __webpack_require__(12);
+var _ConflictError = __webpack_require__(13);
 
 var _ConflictError2 = _interopRequireDefault(_ConflictError);
 
-var _UnprocessableEntityError = __webpack_require__(13);
+var _UnprocessableEntityError = __webpack_require__(14);
 
 var _UnprocessableEntityError2 = _interopRequireDefault(_UnprocessableEntityError);
 
-var _IDNotFoundError = __webpack_require__(14);
+var _IDNotFoundError = __webpack_require__(15);
 
 var _IDNotFoundError2 = _interopRequireDefault(_IDNotFoundError);
 
@@ -238,33 +244,33 @@ exports.UnprocessableEntityError = _UnprocessableEntityError2.default;
 exports.IDNotFoundError = _IDNotFoundError2.default;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = require("joi");
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(7);
-module.exports = __webpack_require__(8);
+__webpack_require__(8);
+module.exports = __webpack_require__(9);
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("babel-polyfill");
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _express = __webpack_require__(3);
+var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
@@ -272,11 +278,11 @@ var _httpStatusCodes = __webpack_require__(0);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
-var _bodyParser = __webpack_require__(9);
+var _bodyParser = __webpack_require__(10);
 
 var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
-var _bottlesRouter = __webpack_require__(10);
+var _bottlesRouter = __webpack_require__(11);
 
 var _bottlesRouter2 = _interopRequireDefault(_bottlesRouter);
 
@@ -329,13 +335,13 @@ app.use(function (req, res, next) {
 app.listen(3000);
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -345,7 +351,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _express = __webpack_require__(3);
+var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
@@ -353,39 +359,43 @@ var _httpStatusCodes = __webpack_require__(0);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
-var _index = __webpack_require__(4);
+var _lodash = __webpack_require__(1);
 
-var _index2 = __webpack_require__(15);
+var _lodash2 = _interopRequireDefault(_lodash);
 
-var _IDGenerators = __webpack_require__(20);
+var _index = __webpack_require__(5);
+
+var _index2 = __webpack_require__(16);
+
+var _IDGenerators = __webpack_require__(21);
 
 var _IDGenerators2 = _interopRequireDefault(_IDGenerators);
 
-var _IDValidations = __webpack_require__(21);
+var _IDValidations = __webpack_require__(22);
 
-var _appendErrorToErrorsList = __webpack_require__(22);
+var _appendErrorToErrorsList = __webpack_require__(23);
 
 var _appendErrorToErrorsList2 = _interopRequireDefault(_appendErrorToErrorsList);
 
-var _getIndexByID = __webpack_require__(23);
+var _getIndexByID = __webpack_require__(24);
 
 var _getIndexByID2 = _interopRequireDefault(_getIndexByID);
 
-var _index3 = __webpack_require__(24);
+var _index3 = __webpack_require__(25);
 
-var _convertBodyToArray = __webpack_require__(28);
+var _convertBodyToArray = __webpack_require__(29);
 
 var _convertBodyToArray2 = _interopRequireDefault(_convertBodyToArray);
 
-var _bottleSchemas = __webpack_require__(29);
+var _bottleSchemas = __webpack_require__(30);
 
 var _bottleSchemas2 = _interopRequireDefault(_bottleSchemas);
 
-var _index4 = __webpack_require__(30);
+var _index4 = __webpack_require__(31);
 
 var _bottleProperties = __webpack_require__(35);
 
-var _listFilters = __webpack_require__(1);
+var _listFilters = __webpack_require__(2);
 
 var _concatURLs = __webpack_require__(36);
 
@@ -472,36 +482,32 @@ router.delete("/:id", function (req, res) {
 function bodyValidations(req, res, next) {
     res.locals.errors = (0, _index4.validateCollection)(req.body, _bottleSchemas2.default[req.method]);
 
-    next();
+    if (!_lodash2.default.isEmpty(res.locals.errors)) {
+        next(new _index.UnprocessableEntityError(res.locals.errors));
+    } else {
+        next();
+    }
 }
 
 var IDGenerator = (0, _IDGenerators2.default)("9");
 
 router.post("/", _convertBodyToArray2.default, bodyValidations, function (req, res, next) {
-    if (res.locals.errors.length) {
-        next(new _index.UnprocessableEntityError(res.locals.errors));
-    } else {
-        collection = (0, _index2.addObjects)(collection, req.body, _bottleProperties.entityProperties, _bottleProperties.IDPropertyName, IDGenerator, function (object) {
-            return [["self", (0, _concatURLs2.default)(req.originalUrl, object[_bottleProperties.IDPropertyName])]];
-        });
+    collection = (0, _index2.addObjects)(collection, req.body, _bottleProperties.entityProperties, _bottleProperties.IDPropertyName, IDGenerator, function (object) {
+        return [["self", (0, _concatURLs2.default)(req.originalUrl, object[_bottleProperties.IDPropertyName])]];
+    });
 
-        res.status(_httpStatusCodes2.default.CREATED).send();
-    }
+    res.status(_httpStatusCodes2.default.CREATED).send();
 });
 
 router.put("/", _convertBodyToArray2.default, bodyValidations, (0, _IDValidations.checkForNonExistentID)(collection, _bottleProperties.IDPropertyName), (0, _IDValidations.checkForIDConflicts)(_bottleProperties.IDPropertyName), function (req, res, next) {
-    if (res.locals.errors.length !== 0) {
-        next(new _index.UnprocessableEntityError(res.locals.errors));
-    } else {
-        (0, _index2.updateObjects)(collection, req.body, _bottleProperties.entityProperties, _bottleProperties.IDPropertyName);
-        res.send();
-    }
+    (0, _index2.updateObjects)(collection, req.body, _bottleProperties.entityProperties, _bottleProperties.IDPropertyName);
+    res.send();
 });
 
 exports.default = router;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -541,7 +547,7 @@ var BadQueryError = function () {
 exports.default = BadQueryError;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -592,7 +598,7 @@ var ConflictError = function () {
 exports.default = ConflictError;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -637,7 +643,7 @@ var UnprocessableEntityError = function () {
 exports.default = UnprocessableEntityError;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -690,7 +696,7 @@ var IDNotFoundError = function () {
 exports.default = IDNotFoundError;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -701,19 +707,19 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.deleteByIndex = exports.updateObjects = exports.addObjects = exports.getObjects = undefined;
 
-var _getObjects = __webpack_require__(16);
+var _getObjects = __webpack_require__(17);
 
 var _getObjects2 = _interopRequireDefault(_getObjects);
 
-var _addObjects = __webpack_require__(17);
+var _addObjects = __webpack_require__(18);
 
 var _addObjects2 = _interopRequireDefault(_addObjects);
 
-var _updateObjects = __webpack_require__(18);
+var _updateObjects = __webpack_require__(19);
 
 var _updateObjects2 = _interopRequireDefault(_updateObjects);
 
-var _deleteByIndex = __webpack_require__(19);
+var _deleteByIndex = __webpack_require__(20);
 
 var _deleteByIndex2 = _interopRequireDefault(_deleteByIndex);
 
@@ -725,7 +731,7 @@ exports.updateObjects = _updateObjects2.default;
 exports.deleteByIndex = _deleteByIndex2.default;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -736,7 +742,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = getObjects;
 
-var _listFilters = __webpack_require__(1);
+var _listFilters = __webpack_require__(2);
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -762,7 +768,7 @@ function getObjects(objects, dateProperties, query) {
 }
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -773,7 +779,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = addObjects;
 
-var _listFilters = __webpack_require__(1);
+var _listFilters = __webpack_require__(2);
 
 // TODO insertEntities?
 //TODO addobjects or entities
@@ -800,7 +806,7 @@ function getObjectWithID(object, properties, IDPropertyName, IDGenerator) {
 }
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -833,7 +839,7 @@ function updateObject(objToUpdate, objWithUpdates, properties) {
 }
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -848,7 +854,7 @@ function deleteByIndex(collection, index) {
 };
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -891,7 +897,7 @@ function generateNextNumericID(startID) {
 }
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -902,7 +908,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.checkForIDConflicts = exports.checkForNonExistentID = undefined;
 
-var _index = __webpack_require__(4);
+var _lodash = __webpack_require__(1);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _index = __webpack_require__(5);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function getNonExistentIDObjectIndex(objects, objectsToCheck, IDPropertyName) {
     return objectsToCheck.findIndex(function (objectToCheck) {
@@ -951,18 +963,12 @@ function findConflictingIDInList(list, IDPropertyName) {
     return conflictingID;
 }
 
-var isArrayEmpty = function isArrayEmpty(arr) {
-    return arr.length === 0;
-};
-
 var checkForNonExistentID = function checkForNonExistentID(collection, IDPropertyName) {
     return function (req, res, next) {
-        if (isArrayEmpty(res.locals.errors)) {
-            var nonExistentIDEntityIndex = getNonExistentIDObjectIndex(collection, req.body, IDPropertyName);
+        var nonExistentIDEntityIndex = getNonExistentIDObjectIndex(collection, req.body, IDPropertyName);
 
-            if (nonExistentIDEntityIndex !== -1) {
-                next(new _index.IDNotFoundError(req.body[nonExistentIDEntityIndex][IDPropertyName]));
-            }
+        if (nonExistentIDEntityIndex !== -1) {
+            next(new _index.IDNotFoundError(req.body[nonExistentIDEntityIndex][IDPropertyName]));
         }
 
         next();
@@ -971,12 +977,10 @@ var checkForNonExistentID = function checkForNonExistentID(collection, IDPropert
 
 var checkForIDConflicts = function checkForIDConflicts(IDPropertyName) {
     return function (req, res, next) {
-        if (isArrayEmpty(res.locals.errors)) {
-            var conflictingID = findConflictingIDInList(req.body, "id");
+        var conflictingID = findConflictingIDInList(req.body, "id");
 
-            if (conflictingID !== "") {
-                next(new _index.ConflictError(conflictingID));
-            }
+        if (!_lodash2.default.isEmpty(conflictingID)) {
+            next(new _index.ConflictError(conflictingID));
         }
 
         next();
@@ -987,7 +991,7 @@ exports.checkForNonExistentID = checkForNonExistentID;
 exports.checkForIDConflicts = checkForIDConflicts;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -997,14 +1001,21 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.default = appendErrorToErrorsList;
+
+var _lodash = __webpack_require__(1);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function appendErrorToErrorsList(errorsList, errorObj) {
-    if (Object.keys(errorObj).length !== 0) {
+    if (!_lodash2.default.isEmpty(Object.keys(errorObj))) {
         errorsList.push(errorObj);
     }
 }
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1021,7 +1032,7 @@ function getIndexByID(list, id, IDPropertyName) {
 };
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1032,7 +1043,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.filteringQueryValidations = undefined;
 
-var _filteringQueryValidations = __webpack_require__(25);
+var _filteringQueryValidations = __webpack_require__(26);
 
 var _filteringQueryValidations2 = _interopRequireDefault(_filteringQueryValidations);
 
@@ -1041,7 +1052,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.filteringQueryValidations = _filteringQueryValidations2.default;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1052,7 +1063,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = filteringQueryValidations;
 
-var _validations = __webpack_require__(26);
+var _validations = __webpack_require__(27);
 
 //
 
@@ -1096,7 +1107,7 @@ function filteringQueryValidations(fields) {
 }
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1106,7 +1117,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _validator = __webpack_require__(27);
+var _validator = __webpack_require__(28);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -1153,13 +1164,13 @@ var lastCharOfString = function lastCharOfString(str) {
 };
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = require("validator");
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1178,7 +1189,7 @@ function convertBodyToArray(req, res, next) {
 }
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1188,7 +1199,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _joi = __webpack_require__(5);
+var _joi = __webpack_require__(6);
 
 var _joi2 = _interopRequireDefault(_joi);
 
@@ -1213,7 +1224,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1224,7 +1235,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.validateQuery = exports.ObjectValidator = exports.validateCollection = undefined;
 
-var _validateCollection = __webpack_require__(31);
+var _validateCollection = __webpack_require__(32);
 
 var _validateCollection2 = _interopRequireDefault(_validateCollection);
 
@@ -1243,7 +1254,7 @@ exports.ObjectValidator = _ObjectValidator2.default;
 exports.validateQuery = _validateQuery2.default;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1254,15 +1265,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = validateCollection;
 
-var _joi = __webpack_require__(5);
+var _joi = __webpack_require__(6);
 
 var _joi2 = _interopRequireDefault(_joi);
 
-var _PropertyError = __webpack_require__(2);
+var _PropertyError = __webpack_require__(3);
 
 var _PropertyError2 = _interopRequireDefault(_PropertyError);
 
-var _lodash = __webpack_require__(32);
+var _lodash = __webpack_require__(1);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -1286,12 +1297,6 @@ function validateCollection(collection, joiSchema) {
 }
 
 /***/ }),
-/* 32 */
-/***/ (function(module, exports) {
-
-module.exports = require("lodash");
-
-/***/ }),
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1304,7 +1309,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _PropertyError = __webpack_require__(2);
+var _PropertyError = __webpack_require__(3);
 
 var _PropertyError2 = _interopRequireDefault(_PropertyError);
 
@@ -1378,7 +1383,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = validateQuery;
 
-var _PropertyError = __webpack_require__(2);
+var _PropertyError = __webpack_require__(3);
 
 var _PropertyError2 = _interopRequireDefault(_PropertyError);
 
