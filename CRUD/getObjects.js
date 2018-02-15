@@ -5,7 +5,7 @@ export default function getObjects(objects, dateProperties, query) {
     let { offset, limit, fields, sort } = query;
 
     sort = _.isUndefined(sort) ? [] : sort.split(",");
-    offset = _.isUndefined(offse) ? 0 : parseInt(offset);
+    offset = _.isUndefined(offset) ? 0 : parseInt(offset);
     limit = _.isUndefined(limit) ? objects.length - offset : parseInt(limit);
     fields = _.isUndefined(fields) ? undefined : fields.split(",");
 

@@ -1,4 +1,4 @@
-import { isInSortFormat, isIn, isNumericString } from "../validation/validations.js";//
+import { isInSortFormat, isIn, isNumericString } from "../validation/validations.js";
 
 function areAllTrue(values) { return values.every(value => value === true); }
 

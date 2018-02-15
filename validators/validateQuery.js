@@ -1,7 +1,7 @@
 // const ObjectValidator = require("../validators/ObjectValidator.js");
 import PropertyError from "../validation/PropertyError.js";
 // const Joi = require("joi");
-// const _ = require("lodash");
+const _ = require("lodash");
 
 export default function validateQuery(query, validationsObj) {
     let errors = {};
@@ -13,12 +13,12 @@ export default function validateQuery(query, validationsObj) {
         if (!paramValidationData.isValid(paramValue)) {
             errors[param] =
                 new PropertyError(
-                    "query",
+                    `query[${param}]`,
                     paramValue,
                     paramValidationData.errorMsg
                 );
         }
     }
 
-    return Object.keys(errors).length === 0 ? {} : { errors: errors };
+    return _.isEmpty(Object.keys(errors)) ? {} : { errors: errors };
 }

@@ -67,13 +67,13 @@
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = require("http-status-codes");
+module.exports = require("lodash");
 
 /***/ }),
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = require("lodash");
+module.exports = require("http-status-codes");
 
 /***/ }),
 /* 2 */
@@ -274,7 +274,7 @@ var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes = __webpack_require__(1);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
@@ -355,11 +355,11 @@ var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes = __webpack_require__(1);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
-var _lodash = __webpack_require__(1);
+var _lodash = __webpack_require__(0);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -410,7 +410,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 
 /* Body Validation */
-//
 
 
 /* PUT ID Validation */
@@ -455,7 +454,7 @@ function queryValidations(req, res, next) {
 // Gets only the second last object.
 router.get("/", queryValidations, function (req, res, next) {
     if (res.locals.errors.length) {
-        next(new _index.BadQueryError(res.locals.errors));
+        next(new _index.BadQueryError(res.locals.errors, "Bad query."));
     } else {
         var objectsToSend = (0, _index2.getObjects)(collection, _bottleProperties.dateProperties, req.query);
 
@@ -483,7 +482,7 @@ function bodyValidations(req, res, next) {
     res.locals.errors = (0, _index4.validateCollection)(req.body, _bottleSchemas2.default[req.method]);
 
     if (!_lodash2.default.isEmpty(res.locals.errors)) {
-        next(new _index.UnprocessableEntityError(res.locals.errors));
+        next(new _index.UnprocessableEntityError(res.locals.errors, "Bad body."));
     } else {
         next();
     }
@@ -519,7 +518,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes = __webpack_require__(1);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
@@ -528,10 +527,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var BadQueryError = function () {
-    function BadQueryError(errorJSON) {
+    function BadQueryError(errorJSON, message) {
         _classCallCheck(this, BadQueryError);
 
         this.errorJSON = errorJSON;
+        this.message = message;
     }
 
     _createClass(BadQueryError, [{
@@ -559,7 +559,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes = __webpack_require__(1);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
@@ -610,7 +610,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes = __webpack_require__(1);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
@@ -619,10 +619,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var UnprocessableEntityError = function () {
-    function UnprocessableEntityError(errors) {
+    function UnprocessableEntityError(errors, message) {
         _classCallCheck(this, UnprocessableEntityError);
 
         this.errors = errors;
+        this.message = message;
     }
 
     _createClass(UnprocessableEntityError, [{
@@ -655,7 +656,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _httpStatusCodes = __webpack_require__(0);
+var _httpStatusCodes = __webpack_require__(1);
 
 var _httpStatusCodes2 = _interopRequireDefault(_httpStatusCodes);
 
@@ -742,9 +743,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = getObjects;
 
+var _lodash = __webpack_require__(0);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _listFilters = __webpack_require__(2);
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function getObjects(objects, dateProperties, query) {
     var offset = query.offset,
@@ -753,16 +758,16 @@ function getObjects(objects, dateProperties, query) {
         sort = query.sort;
 
 
-    sort = sort === undefined ? [] : sort.split(",");
-    offset = offset === undefined ? 0 : parseInt(offset);
-    limit = limit === undefined ? objects.length - offset : parseInt(limit);
-    fields = fields === undefined ? undefined : fields.split(",");
+    sort = _lodash2.default.isUndefined(sort) ? [] : sort.split(",");
+    offset = _lodash2.default.isUndefined(offset) ? 0 : parseInt(offset);
+    limit = _lodash2.default.isUndefined(limit) ? objects.length - offset : parseInt(limit);
+    fields = _lodash2.default.isUndefined(fields) ? undefined : fields.split(",");
 
     var sortedEntities = (0, _listFilters.sortByField)(objects, sort, dateProperties);
 
     var rangedEntities = sortedEntities.slice(offset, offset + limit);
 
-    var entitiesWithSelectedFields = fields ? (0, _listFilters.getListWithSelectedFields)(rangedEntities, [].concat(_toConsumableArray(fields), ["links"])) : rangedEntities;
+    var entitiesWithSelectedFields = fields ? (0, _listFilters.getListWithSelectedFields)(rangedEntities, fields.concat(["links"])) : rangedEntities;
 
     return entitiesWithSelectedFields;
 }
@@ -816,6 +821,13 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.default = updateObjects;
+
+var _lodash = __webpack_require__(0);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName) {
     listWithUpdates.forEach(function (objectFromBody) {
         var entityToModify = listToUpdate.find(function (entity) {
@@ -827,7 +839,7 @@ function updateObjects(listToUpdate, listWithUpdates, properties, IDPropertyName
 }
 
 var hasProperty = function hasProperty(object, property) {
-    return object[property] !== undefined;
+    return !_lodash2.default.isUndefined(object[property]);
 };
 
 function updateObject(objToUpdate, objWithUpdates, properties) {
@@ -908,7 +920,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.checkForIDConflicts = exports.checkForNonExistentID = undefined;
 
-var _lodash = __webpack_require__(1);
+var _lodash = __webpack_require__(0);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -1002,7 +1014,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = appendErrorToErrorsList;
 
-var _lodash = __webpack_require__(1);
+var _lodash = __webpack_require__(0);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -1065,8 +1077,6 @@ exports.default = filteringQueryValidations;
 
 var _validations = __webpack_require__(27);
 
-//
-
 function areAllTrue(values) {
     return values.every(function (value) {
         return value === true;
@@ -1113,10 +1123,6 @@ function filteringQueryValidations(fields) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
 var _validator = __webpack_require__(28);
 
 var _validator2 = _interopRequireDefault(_validator);
@@ -1127,7 +1133,14 @@ function isString(value) {
     return typeof value === "string";
 }
 
-exports.default = {
+var stringWithoutLastChar = function stringWithoutLastChar(str) {
+    return str.slice(0, -1);
+};
+var lastCharOfString = function lastCharOfString(str) {
+    return str.substr(-1);
+};
+
+module.exports = {
     isAlphanumericString: function isAlphanumericString(value) {
         return isString(value) && _validator2.default.isAlphanumeric(value);
     },
@@ -1153,14 +1166,6 @@ exports.default = {
     isSizeFormatString: function isSizeFormatString(value) {
         return isString(value) && _validator2.default.isFloat(stringWithoutLastChar(value)) && lastCharOfString(value);
     }
-};
-
-
-var stringWithoutLastChar = function stringWithoutLastChar(str) {
-    return str.slice(0, -1);
-};
-var lastCharOfString = function lastCharOfString(str) {
-    return str.substr(-1);
 };
 
 /***/ }),
@@ -1273,7 +1278,7 @@ var _PropertyError = __webpack_require__(3);
 
 var _PropertyError2 = _interopRequireDefault(_PropertyError);
 
-var _lodash = __webpack_require__(1);
+var _lodash = __webpack_require__(0);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -1390,8 +1395,7 @@ var _PropertyError2 = _interopRequireDefault(_PropertyError);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // const Joi = require("joi");
-// const _ = require("lodash");
-
+var _ = __webpack_require__(0); // const ObjectValidator = require("../validators/ObjectValidator.js");
 function validateQuery(query, validationsObj) {
     var errors = {};
 
@@ -1400,12 +1404,12 @@ function validateQuery(query, validationsObj) {
         var paramValue = query[param];
 
         if (!paramValidationData.isValid(paramValue)) {
-            errors[param] = new _PropertyError2.default("query", paramValue, paramValidationData.errorMsg);
+            errors[param] = new _PropertyError2.default("query[" + param + "]", paramValue, paramValidationData.errorMsg);
         }
     }
 
-    return Object.keys(errors).length === 0 ? {} : { errors: errors };
-} // const ObjectValidator = require("../validators/ObjectValidator.js");
+    return _.isEmpty(Object.keys(errors)) ? {} : { errors: errors };
+}
 
 /***/ }),
 /* 35 */

@@ -15,7 +15,7 @@ import generateNextNumericID from "../IDGenerators/IDGenerators.js";
 import { checkForNonExistentID, checkForIDConflicts } from "../IDValidations/IDValidations.js";
 
 /* ID Validation */
-import appendErrorToErrorsList from "../appendErrorToErrorsList/appendErrorToErrorsList.js"; //
+import appendErrorToErrorsList from "../appendErrorToErrorsList/appendErrorToErrorsList.js";
 import getIndexByID from "../IDParamMiddleware/getIndexByID.js";
 
 /* Query Validation */
@@ -62,7 +62,7 @@ router.get("/",
     queryValidations,
     (req, res, next) => {
         if (res.locals.errors.length) {
-            next(new BadQueryError(res.locals.errors));
+            next(new BadQueryError(res.locals.errors, "Bad query."));
         } else {
             let objectsToSend = getObjects(
                 collection,
@@ -104,7 +104,7 @@ function bodyValidations(req, res, next) {
         );
 
     if (!_.isEmpty(res.locals.errors)) {
-        next(new UnprocessableEntityError(res.locals.errors));
+        next(new UnprocessableEntityError(res.locals.errors, "Bad body."));
     } else {
         next();
     }

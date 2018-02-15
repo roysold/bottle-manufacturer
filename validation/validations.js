@@ -4,7 +4,10 @@ function isString(value) {
     return typeof value === "string"
 }
 
-export default {
+const stringWithoutLastChar = str => str.slice(0, -1);
+const lastCharOfString = str => str.substr(-1);
+
+module.exports = {
     isAlphanumericString: value =>
         isString(value) && validator.isAlphanumeric(value),
 
@@ -28,6 +31,3 @@ export default {
         validator.isFloat(stringWithoutLastChar(value)) &&
         lastCharOfString(value)
 }
-
-const stringWithoutLastChar = str => str.slice(0, -1);
-const lastCharOfString = str => str.substr(-1);

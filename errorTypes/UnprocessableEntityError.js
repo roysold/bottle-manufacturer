@@ -1,8 +1,9 @@
 import httpStatusCodes from "http-status-codes";
 
 export default class UnprocessableEntityError {
-    constructor(errors) {
+    constructor(errors, message) {
         this.errors = errors;
+        this.message = message;
     }
 
     get errorJSON() {
