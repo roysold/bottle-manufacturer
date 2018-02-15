@@ -341,6 +341,10 @@ module.exports = require("body-parser");
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _express = __webpack_require__(3);
 
 var _express2 = _interopRequireDefault(_express);
@@ -494,7 +498,7 @@ router.put("/", _convertBodyToArray2.default, bodyValidations, (0, _IDValidation
     }
 });
 
-module.exports = router;
+exports.default = router;
 
 /***/ }),
 /* 11 */
