@@ -18,7 +18,7 @@ import appendErrorToErrorsList from "../appendErrorToErrorsList/appendErrorToErr
 import getIndexByID from "../IDParamMiddleware/getIndexByID.js";
 
 /* Query Validation */
-import { filteringQueryValidations} from "../queryValidationData/index.js";
+import { filteringQueryValidations } from "../queryValidationData/index.js";
 
 /* Body Validation */
 import convertBodyToArray from "../convertBodyToArrayMiddleware/convertBodyToArray.js";

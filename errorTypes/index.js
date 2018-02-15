@@ -1,6 +1,11 @@
-export default {
-    BadQueryError: require("./BadQueryError.js"),
-    ConflictError: require("./ConflictError.js"),
-    UnprocessableEntityError: require("./UnprocessableEntityError.js"),
-    IDNotFoundError: require("./IDNotFoundError.js")
+import BadQueryError from "./BadQueryError.js";
+import ConflictError from "./ConflictError.js";
+import UnprocessableEntityError from "./UnprocessableEntityError.js";
+import IDNotFoundError from "./IDNotFoundError.js";
+
+export {
+    BadQueryError,
+    ConflictError,
+    UnprocessableEntityError,
+    IDNotFoundError
 }

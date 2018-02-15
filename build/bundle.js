@@ -212,12 +212,30 @@ module.exports = require("express");
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = {
-    BadQueryError: __webpack_require__(11),
-    ConflictError: __webpack_require__(12),
-    UnprocessableEntityError: __webpack_require__(13),
-    IDNotFoundError: __webpack_require__(14)
-};
+exports.IDNotFoundError = exports.UnprocessableEntityError = exports.ConflictError = exports.BadQueryError = undefined;
+
+var _BadQueryError = __webpack_require__(11);
+
+var _BadQueryError2 = _interopRequireDefault(_BadQueryError);
+
+var _ConflictError = __webpack_require__(12);
+
+var _ConflictError2 = _interopRequireDefault(_ConflictError);
+
+var _UnprocessableEntityError = __webpack_require__(13);
+
+var _UnprocessableEntityError2 = _interopRequireDefault(_UnprocessableEntityError);
+
+var _IDNotFoundError = __webpack_require__(14);
+
+var _IDNotFoundError2 = _interopRequireDefault(_IDNotFoundError);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.BadQueryError = _BadQueryError2.default;
+exports.ConflictError = _ConflictError2.default;
+exports.UnprocessableEntityError = _UnprocessableEntityError2.default;
+exports.IDNotFoundError = _IDNotFoundError2.default;
 
 /***/ }),
 /* 5 */
@@ -1165,7 +1183,6 @@ function convertBodyToArray(req, res, next) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.PUTbottleSchema = exports.POSTbottleSchema = undefined;
 
 var _joi = __webpack_require__(5);
 
@@ -1186,8 +1203,10 @@ var PUTbottleSchema = {
     factoryID: _joi2.default.string().regex(/^\d+$/)
 };
 
-exports.POSTbottleSchema = POSTbottleSchema;
-exports.PUTbottleSchema = PUTbottleSchema;
+exports.default = {
+    POST: POSTbottleSchema,
+    PUT: PUTbottleSchema
+};
 
 /***/ }),
 /* 30 */
@@ -1387,13 +1406,16 @@ function validateQuery(query, validationsObj) {
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
-exports.default = {
-    entityProperties: ["id", "creationDate", "orderID", "factoryID"],
-    IDPropertyName: "id",
-    dateProperties: ["creationDate"]
-};
+
+var entityProperties = ["id", "creationDate", "orderID", "factoryID"];
+var IDPropertyName = "id";
+var dateProperties = ["creationDate"];
+
+exports.entityProperties = entityProperties;
+exports.IDPropertyName = IDPropertyName;
+exports.dateProperties = dateProperties;
 
 /***/ }),
 /* 36 */

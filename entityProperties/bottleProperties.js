@@ -1,5 +1,6 @@
-export default {
-    entityProperties: ["id", "creationDate", "orderID", "factoryID"],
-    IDPropertyName: "id",
-    dateProperties: ["creationDate"]
-};
+
+const entityProperties = ["id", "creationDate", "orderID", "factoryID"];
+const IDPropertyName = "id";
+const dateProperties = ["creationDate"];
+
+export { entityProperties, IDPropertyName, dateProperties };

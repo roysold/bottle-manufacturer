@@ -13,7 +13,7 @@ const PUTbottleSchema = {
     factoryID: Joi.string().regex(/^\d+$/)
 }
 
-export {
-    POSTbottleSchema,
-    PUTbottleSchema
+export default {
+    POST: POSTbottleSchema,
+    PUT: PUTbottleSchema
 };
